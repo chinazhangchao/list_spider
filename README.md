@@ -2,7 +2,7 @@
 
 A url list spider based on em-http-request
 
-Many times I only need to spider by url list then parse them and spider again. This is for the purpose.
+Many times I found only need to spider by url list then parse them and spider again. This is for the purpose.
 
 Use like this:
 
@@ -65,7 +65,7 @@ ListSpider.new(task_list).start
 ListSpider.new($next_list).start
 ```
 
-And there are many options to use
+And there are many options can set
 
 ```ruby
 TaskStruct.new(href, local_path, http_method: :get, params: {}, extra_data: nil, parse_method: nil)
@@ -80,8 +80,21 @@ ListSpider.new(down_list, inter_val: ListSpider::RANDOM_TIME, max: 1).start
 ```
 
 ```ruby
+#set proxy
+ListSpider.set_proxy(proxy_addr, proxy_port, username: nil, password: nil)
+
+#set http header
+ListSpider.set_header_option(header_option)
+
+#convert the file encoding to utf-8
 ListSpider.conver_to_utf8 = false
-ListSpider.connection_opts = 2*60
-ListSpider.override_exist = false
+
+#set connect timeout
+ListSpider.connect_timeout = 2*60
+
+#over write exist file
+ListSpider.overwrite_exist = false
+
+#set redirect depth
 ListSpider.max_redirects = 10
 ```

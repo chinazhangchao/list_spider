@@ -30,12 +30,12 @@ module SpiderBase
 
   @@conver_to_utf8 = false
   @@connection_opts = {:connect_timeout => 2*60}
-  @@override_exist = false
+  @@overwrite_exist = false
   @@max_redirects = 10
 
   class << self
 
-    attr_accessor :conver_to_utf8, :override_exist, :max_redirects
+    attr_accessor :conver_to_utf8, :overwrite_exist, :max_redirects
 
     def set_proxy(proxy_addr, proxy_port, username: nil, password: nil)
       @@connection_opts = {
@@ -47,7 +47,7 @@ module SpiderBase
       @@connection_opts[:proxy][:authorization] = [username, password] if username && password
     end
 
-    def set_connect_timeout(max_connect_time)
+    def connect_timeout(max_connect_time)
       @@connection_opts[:connect_timeout] = max_connect_time
     end
 
@@ -64,7 +64,7 @@ module SpiderBase
       begin_time = Time.now
 
       for_each_proc = proc do |e|
-        if !@@override_exist && File.exist?(e.local_path)
+        if !@@overwrite_exist && File.exist?(e.local_path)
           succeed_list << e
         else
           no_job = false
