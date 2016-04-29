@@ -4,7 +4,11 @@ A url list spider based on em-http-request.
 
 Many times we only need to spider by url list then parse them and spider again. This is for the purpose.
 
-Use like this:
+## Getting started
+
+    gem install list-spider
+    
+## Use like this:
 
 ```ruby
 require 'list-spider'
@@ -34,7 +38,7 @@ task_list << TaskStruct.new('http://www.yinwang.org/', down_dir+'index.html', pa
 ListSpider.new(task_list).start
 ```
 
-Or step by step
+## Or step by step
 ```ruby
 require 'list-spider'
 
@@ -65,7 +69,7 @@ ListSpider.new(task_list).start
 ListSpider.new($next_list).start
 ```
 
-And there are many options can set
+## And there are many options can set
 
 ```ruby
 TaskStruct.new(href, local_path, http_method: :get, params: {}, extra_data: nil, parse_method: nil)
@@ -97,4 +101,13 @@ ListSpider.overwrite_exist = false
 
 #set redirect depth
 ListSpider.max_redirects = 10
+```
+
+## There are a util class to help delete unvalid file
+
+```ruby
+DeleteUnvalid.new("#{down_dir}/*", size_threshold: 300).start
+
+#its params
+DeleteUnvalid.new(dir_pattern, size_threshold: 1000, cust_judge: nil)
 ```
