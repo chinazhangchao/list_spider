@@ -1,7 +1,7 @@
 require 'rchardet'
 require 'net/http'
 
-module Helper
+module SpiderHelper
 
   class << self
 
@@ -96,16 +96,6 @@ module Helper
       str.encode!(Encoding::UTF_8, :undef => :replace, :replace => "?", :invalid => :replace)
       
       return str
-    end
-
-    def form_method(methodNameSymbol, objectName = nil)
-      if methodNameSymbol == nil
-        return nil
-      elsif objectName == nil
-        method(methodNameSymbol)
-      else
-        return objectName.method(methodNameSymbol)
-      end
     end
 
   end

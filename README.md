@@ -1,32 +1,87 @@
-# spider
+# list-spider
 
-a spider based on em-http-request
+A url list spider based on em-http-request
 
-easy to use:
+Many times I only need to spider by url list then parse them and spider again. This is for the purpose.
+
+Use like this:
 
 ```ruby
-require 'get_item'
+require 'list-spider'
 
-down_list = []
+def down_dir
+  'wangyin/'
+end
 
-down_list << LinkStruct.new('https://www.baidu.com/', 'baidu.html')
+def parse_index_item(file_name, extra_data, spider)
+  content = File.read(file_name)
+  doc = Nokogiri::HTML(content)
+  list_group = doc.css("ul.list-group")
+  link_list = list_group.css("a")
 
-GetItem.new(down_list).start
+  article_list = []
+  link_list.each do |link|
+    href = link['href']
+    local_path = down_dir + link.content + ".html"
+    article_list << TaskStruct.new(href, local_path)
+  end
+  spider.add_task(article_list)
+end
+
+task_list = []
+task_list << TaskStruct.new('http://www.yinwang.org/', down_dir+'index.html', parse_method: method(:parse_index_item))
+
+ListSpider.new(task_list).start
 ```
 
-capable of complicate process:
+Or step by step
+```ruby
+require 'list-spider'
+
+def down_dir
+  'wangyin/'
+end
+
+$next_list = []
+
+def parse_index_item(file_name, extra_data, spider)
+  content = File.read(file_name)
+  doc = Nokogiri::HTML(content)
+  list_group = doc.css("ul.list-group")
+  link_list = list_group.css("a")
+
+  $next_list = []
+  link_list.each do |link|
+    href = link['href']
+    local_path = down_dir + link.content + ".html"
+    $next_list<< TaskStruct.new(href, local_path)
+  end
+end
+
+task_list = []
+task_list << TaskStruct.new('http://www.yinwang.org/', down_dir+'index.html', parse_method: method(:parse_index_item))
+
+ListSpider.new(task_list).start
+ListSpider.new($next_list).start
+```
+
+And there are many options to use
 
 ```ruby
-#setting http header
-Spider.set_header_option({})
+TaskStruct.new(href, local_path, http_method: :get, params: {}, extra_data: nil, parse_method: nil)
+```
 
-#designate http method and parmas
-down_list << LinkStruct.new('https://www.baidu.com/', 'baidu.html', http_method: :post params:{})
+```ruby
+#no concurrent limit
+ListSpider.new(down_list, inter_val: 0, max: ListSpider::NO_LIMIT_CONCURRENT).start
 
-#designate interval between downloads, max concurrent download number, parse mthod
-GetItem.new(down_list, inter_val: 10, max: 10, parse_method: (:process)).start
+#sleep random time, often used in site which limit spider
+ListSpider.new(down_list, inter_val: ListSpider::RANDOM_TIME, max: 1).start
+```
 
-#you can even use a random interval time to imitate human behavior ^_^
-GetItem.new(down_list, inter_val: GetItem::RANDOM_TIME, max: 1).start
-
+```ruby
+ListSpider.conver_to_utf8 = false
+ListSpider.connection_opts = 2*60
+ListSpider.override_exist = false
+ListSpider.max_redirects = 10
 ```
