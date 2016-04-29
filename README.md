@@ -111,3 +111,7 @@ DeleteUnvalid.new("#{down_dir}/*", size_threshold: 300).start
 #its params
 DeleteUnvalid.new(dir_pattern, size_threshold: 1000, cust_judge: nil)
 ```
+
+### License
+
+(MIT License) - Copyright (c) 2016 Charles Zhang
