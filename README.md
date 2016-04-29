@@ -1,8 +1,8 @@
 # list-spider
 
-A url list spider based on em-http-request
+A url list spider based on em-http-request.
 
-Many times I found only need to spider by url list then parse them and spider again. This is for the purpose.
+Many times we only need to spider by url list then parse them and spider again. This is for the purpose.
 
 Use like this:
 
