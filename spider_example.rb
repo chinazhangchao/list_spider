@@ -1,5 +1,4 @@
-require 'list-spider'
-require 'delete-unvalid'
+require 'list_spider'
 
 def down_dir
   'wangyin/'
@@ -20,11 +19,11 @@ def parse_index_item(file_name, extra_data, spider)
   spider.add_task(article_list)
 end
 
-DeleteUnvalid.new("#{down_dir}/*", size_threshold: 300).start
+DeleteUnvalid.delete("#{down_dir}/*", size_threshold: 300)
 
 task_list = []
 task_list << TaskStruct.new('http://www.yinwang.org/', down_dir+'index.html', parse_method: method(:parse_index_item))
 
-ListSpider.new(task_list).start
+ListSpider.get_list(task_list)
 
-DeleteUnvalid.new("#{down_dir}/*", size_threshold: 300).start
+DeleteUnvalid.delete("#{down_dir}/*", size_threshold: 300)

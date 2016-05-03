@@ -1,9 +1,12 @@
 require File.expand_path('../spider_base', __FILE__)
+require File.expand_path('../delete_unvalid', __FILE__)
 
 class ListSpider
   
   RANDOM_TIME = -1
   NO_LIMIT_CONCURRENT = -1
+
+  @@random_time_range = 3..10
 
   include SpiderBase
 
@@ -12,20 +15,15 @@ class ListSpider
     @inter_val = inter_val
     @max = max
     @max = @down_list.size if @max == NO_LIMIT_CONCURRENT
+    @succeed_size = 0
+    @failed_size = 0
   end
 
-  @@succeed = 0
-  @@failed = 0
+  attr_reader :succeed_size, :failed_size
 
   class << self
 
-    def succeed_size
-      @@succeed
-    end
-
-    def failed_size
-      @@failed
-    end
+    attr_accessor :random_time_range
 
   end
 
@@ -40,20 +38,24 @@ class ListSpider
   end
 
   def complete(multi, success_list, failed_list)
-    puts "success size:#{success_list.size}"
+    @succeed_size += success_list.size
+    @failed_size += failed_list.size
+    # puts "success size:#{success_list.size}"
+    # puts "failed size:#{failed_list.size}"
     success_list.each do |e|
       e.parse_method.call(e.local_path, e.extra_data, self) if e.parse_method
     end
-    puts "failed size:#{failed_list.size}"
+    
     todo = @down_list.slice!(0, @max)
     if todo.empty?
+      puts "success size:#{@succeed_size}"
+      puts "failed size:#{@failed_size}"
       EventMachine.stop
-      puts "succeed size:#{ListSpider.succeed_size}"
     else
       if @inter_val != 0
         if success_list.size != 0 || failed_list.size !=0
           if @inter_val == RANDOM_TIME
-            sleep(rand(3..10))
+            sleep(rand(@@random_time_range))
           else
             sleep(@inter_val)
           end
@@ -64,7 +66,12 @@ class ListSpider
   end
 
   def start
+    puts "total size:#{@down_list.size}"
     event_machine_start_list(@down_list.slice!(0, @max), method(:complete))
+  end
+
+  def self.get_list(down_list, inter_val: 0, max: 30)
+    ListSpider.new(down_list, inter_val: inter_val, max: max).start
   end
 
 end

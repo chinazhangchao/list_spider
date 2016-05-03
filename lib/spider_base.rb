@@ -2,7 +2,7 @@ require 'em-http-request'
 require 'nokogiri'
 require 'fileutils'
 require 'set'
-require File.expand_path('../spider-helper', __FILE__)
+require File.expand_path('../spider_helper', __FILE__)
 require "addressable/uri"
 
 class TaskStruct
@@ -134,6 +134,8 @@ module SpiderBase
         end_time = Time.now
         puts "use time:#{end_time-begin_time} seconds"
         if callback.nil?
+          puts "success size:#{self.succeed_size}"
+          puts "failed size:#{self.failed_size}"
           EventMachine.stop
         else
           callback.call(multi, succeed_list, failed_list)
@@ -163,7 +165,6 @@ module SpiderBase
       down_list << TaskStruct.new(url, down_dir + file_name)
       EventMachine.run {
         index = 0
-        puts "total size:#{down_list.size}"
         begin_time = Time.now
         event_machine_down(down_list, callback)
         end_time = Time.now
@@ -173,8 +174,6 @@ module SpiderBase
     def event_machine_start_list(down_list, callback = nil)
       EventMachine.run {
         index = 0
-        puts "total size:#{down_list.size}"
-        # puts "total size:#{down_list.size}\n#{down_list}"
         begin_time = Time.now
         event_machine_down(down_list, callback)
         end_time = Time.now

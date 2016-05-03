@@ -1,4 +1,4 @@
-# list-spider
+# list_spider
 
 A url list spider based on em-http-request.
 
@@ -6,12 +6,12 @@ Many times we only need to spider by url list then parse them and spider again. 
 
 ## Getting started
 
-    gem install list-spider
+    gem install list_spider
     
 ## Use like this:
 
 ```ruby
-require 'list-spider'
+require 'list_spider'
 
 def down_dir
   'wangyin/'
@@ -40,7 +40,7 @@ ListSpider.new(task_list).start
 
 ## Or step by step
 ```ruby
-require 'list-spider'
+require 'list_spider'
 
 def down_dir
   'wangyin/'
@@ -101,15 +101,18 @@ ListSpider.overwrite_exist = false
 
 #set redirect depth
 ListSpider.max_redirects = 10
+
+#set random time range when use ListSpider::RANDOM_TIME
+ListSpider.random_time_range = 3..10
 ```
 
 ## There are a util class to help delete unvalid file
 
 ```ruby
-DeleteUnvalid.new("#{down_dir}/*", size_threshold: 300).start
+DeleteUnvalid.delete("#{down_dir}/*", size_threshold: 300)
 
 #its params
-DeleteUnvalid.new(dir_pattern, size_threshold: 1000, cust_judge: nil)
+DeleteUnvalid.delete(dir_pattern, size_threshold: 1000, cust_judge: nil)
 ```
 
 ### License

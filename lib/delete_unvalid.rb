@@ -20,7 +20,7 @@ class DeleteUnvalid
   def delete_unvaild(f)
     if @cust_judge.call(f)
       @total += 1
-      puts f
+      puts "deleted file: #{f}"
       File.delete(f)
     end
   end
@@ -30,6 +30,11 @@ class DeleteUnvalid
       # puts f
       delete_unvaild(f)
     end
-    puts "total:#{@total}"
+    puts "delete total:#{@total}"
   end
+
+  def self.delete(dir_pattern, size_threshold: 1000, cust_judge: nil)
+    DeleteUnvalid.new(dir_pattern, size_threshold: size_threshold, cust_judge: cust_judge).start
+  end
+
 end
