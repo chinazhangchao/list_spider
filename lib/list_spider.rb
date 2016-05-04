@@ -139,6 +139,8 @@ module ListSpider
         if callback.nil?
           puts "success size:#{self.succeed_size}"
           puts "failed size:#{self.failed_size}"
+          @@end_time = Time.now
+          puts "total use time:#{@@end_time-@@begin_time} seconds"
           EventMachine.stop
         else
           callback.call(multi, succeed_list, failed_list)
@@ -160,6 +162,8 @@ module ListSpider
       if todo.empty?
         puts "success size:#{@@succeed_size}"
         puts "failed size:#{@@failed_size}"
+        @@end_time = Time.now
+        puts "total use time:#{@@end_time-@@begin_time} seconds"
         EventMachine.stop
       else
         if @@inter_val != 0
@@ -177,6 +181,7 @@ module ListSpider
 
     def event_machine_start_list(down_list, callback = nil)
       EventMachine.run {
+        @@begin_time = Time.now
         if down_list.empty?
           callback.call(nil, [], []) if callback
         else
