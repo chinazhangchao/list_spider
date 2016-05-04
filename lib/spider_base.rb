@@ -33,6 +33,7 @@ module SpiderBase
   @@connection_opts = {:connect_timeout => 2*60}
   @@overwrite_exist = false
   @@max_redirects = 10
+  @@url_set = Set.new
 
   class << self
 
@@ -68,6 +69,7 @@ module SpiderBase
         if !@@overwrite_exist && File.exist?(e.local_path)
           succeed_list << e
         else
+          next unless @@url_set.add?(e.href)
           no_job = false
           opt = {}
           opt = {:redirects => @@max_redirects}
@@ -89,6 +91,7 @@ module SpiderBase
           end
 
           w.callback {
+            @@url_set.delete(e.href)
             # puts "complete:#{w.response_header}"
             s = w.response_header.status
             puts s
@@ -112,6 +115,7 @@ module SpiderBase
             end
           }
           w.errback {
+            @@url_set.delete(e.href)
             puts "errback:#{w.response_header}"
             puts e.origin_href
             puts e.href
