@@ -74,4 +74,8 @@ class ListSpider
     ListSpider.new(down_list, inter_val: inter_val, max: max).start
   end
 
+  def self.get_one(task)
+    ListSpider.new([task]).start
+  end
+
 end

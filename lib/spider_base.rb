@@ -7,6 +7,7 @@ require "addressable/uri"
 
 class TaskStruct
   def initialize(href, local_path, http_method: :get, params: {}, extra_data: nil, parse_method: nil)
+    @origin_href = href
     @href = href
     if @href.class == "".class
       @href = SpiderHelper.string_to_uri(@href)
@@ -22,7 +23,7 @@ class TaskStruct
     o.class == self.class && o.href == href && o.local_path == local_path && o.http_method == http_method && o.params == params && o.extra_data == extra_data
   end
 
-  attr_accessor :href, :local_path, :http_method, :params, :extra_data, :parse_method
+  attr_accessor :origin_href , :href, :local_path, :http_method, :params, :extra_data, :parse_method
 
 end
 
@@ -112,6 +113,7 @@ module SpiderBase
           }
           w.errback {
             puts "errback:#{w.response_header}"
+            puts e.origin_href
             puts e.href
             puts w.response_header.status
             failed_list << e
