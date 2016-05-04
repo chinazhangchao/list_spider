@@ -115,7 +115,7 @@ ListSpider.random_time_range = 3..10
 ## There are a util class to help delete unvalid file
 
 ```ruby
-DeleteUnvalid.delete("#{down_dir}/*", size_threshold: 300)
+DeleteUnvalid.delete(CustomConfig::DIR + '*', size_threshold: 300)
 
 #its params
 DeleteUnvalid.delete(dir_pattern, size_threshold: 1000, cust_judge: nil)

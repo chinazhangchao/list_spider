@@ -20,9 +20,9 @@ def parse_index_item(file_name, extra_data, spider)
   end
 end
 
-DeleteUnvalid.delete("#{CustomConfig::DIR}/*", size_threshold: 300)
+DeleteUnvalid.delete(CustomConfig::DIR + '*', size_threshold: 300)
 
 ListSpider.get_one(TaskStruct.new('http://www.yinwang.org/', CustomConfig::DIR+'index.html', parse_method: method(:parse_index_item)))
 ListSpider.get_list($next_list, max: 50)
 
-DeleteUnvalid.delete("#{CustomConfig::DIR}/*", size_threshold: 300)
+DeleteUnvalid.delete(CustomConfig::DIR + '*', size_threshold: 300)
