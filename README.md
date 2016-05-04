@@ -112,7 +112,7 @@ ListSpider.max_redirects = 10
 ListSpider.random_time_range = 3..10
 ```
 
-## There are a util class to help delete unvalid file
+## There is a util class to help delete unvalid file
 
 ```ruby
 DeleteUnvalid.delete(CustomConfig::DIR + '*', size_threshold: 300)
