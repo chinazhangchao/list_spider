@@ -4,7 +4,7 @@ module CustomConfig
   DIR = 'wangyin/'
 end
 
-def parse_index_item(file_name, extra_data, spider)
+def parse_index_item(file_name, extra_data)
   content = File.read(file_name)
   doc = Nokogiri::HTML(content)
   list_group = doc.css("ul.list-group")
@@ -16,7 +16,7 @@ def parse_index_item(file_name, extra_data, spider)
     local_path = CustomConfig::DIR + link.content + ".html"
     article_list << TaskStruct.new(href, local_path)
   end
-  spider.add_task(article_list)
+  ListSpider.add_task(article_list)
 end
 
 DeleteUnvalid.delete(CustomConfig::DIR + '*', size_threshold: 300)
