@@ -27,15 +27,15 @@ class ListSpider
 
   end
 
-  def add_task(task)
-    if task.is_a?Array
-      @down_list = @down_list + task
-    elsif task.is_a?TaskStruct
-      @down_list << task
-    else
-      puts "error task type:#{task.class}"
-    end
-  end
+  # def add_task(task)
+  #   if task.is_a?Array
+  #     @down_list = @down_list + task
+  #   elsif task.is_a?TaskStruct
+  #     @down_list << task
+  #   else
+  #     puts "error task type:#{task.class}"
+  #   end
+  # end
 
   def complete(multi, success_list, failed_list)
     @succeed_size += success_list.size
@@ -43,7 +43,7 @@ class ListSpider
     # puts "success size:#{success_list.size}"
     # puts "failed size:#{failed_list.size}"
     success_list.each do |e|
-      e.parse_method.call(e.local_path, e.extra_data, self) if e.parse_method
+      e.parse_method.call(e.local_path, e.extra_data) if e.parse_method
     end
     
     todo = @down_list.slice!(0, @max)
@@ -71,11 +71,19 @@ class ListSpider
   end
 
   def self.get_list(down_list, inter_val: 0, max: 30)
-    ListSpider.new(down_list, inter_val: inter_val, max: max).start
+    need_down_list = []
+    down_list.each do |ts|
+      if !@@overwrite_exist && File.exist?(ts.local_path)
+        ts.parse_method.call(ts.local_path, ts.extra_data) if ts.parse_method
+      else
+        need_down_list << ts
+      end
+    end
+    ListSpider.new(need_down_list, inter_val: inter_val, max: max).start
   end
 
   def self.get_one(task)
-    ListSpider.new([task]).start
+    get_list([task])
   end
 
 end
