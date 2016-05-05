@@ -66,89 +66,96 @@ module ListSpider
       failed_list = []
       succeed_list = []
       multi = EventMachine::MultiRequest.new
-      # no_job = true
       begin_time = Time.now
 
       for_each_proc = proc do |e|
-        # if !@@overwrite_exist && File.exist?(e.local_path)
-        #   succeed_list << e
-        # else
-          next unless @@url_set.add?(e.href)
-          # no_job = false
-          opt = {}
-          opt = {:redirects => @@max_redirects}
-          opt[:head] = @@header_option if defined? @@header_option
-          if e.http_method == :post
-            opt[:body] = e.params unless e.params.empty?
-            if @@connection_opts
-              w = EventMachine::HttpRequest.new(e.href, @@connection_opts).post opt
-            else
-              w = EventMachine::HttpRequest.new(e.href).post opt
-            end
+        opt = {}
+        opt = {:redirects => @@max_redirects}
+        opt[:head] = @@header_option if defined? @@header_option
+        if e.http_method == :post
+          opt[:body] = e.params unless e.params.empty?
+          if @@connection_opts
+            w = EventMachine::HttpRequest.new(e.href, @@connection_opts).post opt
           else
-            if @@connection_opts
-              opt[:query] = e.params unless e.params.empty?
-              w = EventMachine::HttpRequest.new(e.href, @@connection_opts).get opt
-            else
-              w = EventMachine::HttpRequest.new(e.href).get opt
+            w = EventMachine::HttpRequest.new(e.href).post opt
+          end
+        else
+          if @@connection_opts
+            opt[:query] = e.params unless e.params.empty?
+            w = EventMachine::HttpRequest.new(e.href, @@connection_opts).get opt
+          else
+            w = EventMachine::HttpRequest.new(e.href).get opt
+          end
+        end
+
+        w.callback {
+          s = w.response_header.status
+          puts s
+          if s != 404
+            local_dir = File.dirname(e.local_path)
+            FileUtils.mkdir_p(local_dir) unless Dir.exist?(local_dir)
+            begin
+              File.open(e.local_path, "w") do |f|
+                if @@conver_to_utf8 == true
+                  f << SpiderHelper.to_utf8( w.response)
+                else
+                  f << w.response
+                end
+              end
+              succeed_list << e
+            rescue Exception => e
+              puts e
             end
           end
-
-          w.callback {
-            @@url_set.delete(e.href)
-            # puts "complete:#{w.response_header}"
-            s = w.response_header.status
-            puts s
-            if s != 404
-              local_dir = File.dirname(e.local_path)
-              FileUtils.mkdir_p(local_dir) unless Dir.exist?(local_dir)
-              begin
-                File.open(e.local_path, "w") do |f|
-                  if @@conver_to_utf8 == true
-                    f << SpiderHelper.to_utf8( w.response)
-                  else
-                    f << w.response
-                  end
-                end
-                succeed_list << e
-              rescue Exception => e
-                puts e
-              end
-            end
-          }
-          w.errback {
-            @@url_set.delete(e.href)
-            puts "errback:#{w.response_header}"
-            puts e.origin_href
-            puts e.href
-            puts w.response_header.status
-            failed_list << e
-            if e.http_method == :get
-              SpiderHelper.direct_http_get(e.href, e.local_path)
-            elsif e.http_method == :post
-              SpiderHelper.direct_http_post(e.href, e.local_path, e.params)
-            end
-          }
-          multi.add e.local_path, w
-        # end
+        }
+        w.errback {
+          puts "errback:#{w.response_header}"
+          puts e.origin_href
+          puts e.href
+          puts w.response_header.status
+          failed_list << e
+          if e.http_method == :get
+            SpiderHelper.direct_http_get(e.href, e.local_path)
+          elsif e.http_method == :post
+            SpiderHelper.direct_http_post(e.href, e.local_path, e.params)
+          end
+        }
+        multi.add e.local_path, w
       end
 
       cb = Proc.new do
         end_time = Time.now
         puts "use time:#{end_time-begin_time} seconds"
         if callback.nil?
-          puts "success size:#{self.succeed_size}"
-          puts "failed size:#{self.failed_size}"
-          @@end_time = Time.now
-          puts "total use time:#{@@end_time-@@begin_time} seconds"
-          EventMachine.stop
+          stop_machine
         else
           callback.call(multi, succeed_list, failed_list)
         end
       end
-
       link_struct_list.each &for_each_proc
       multi.callback &cb
+    end
+
+    def stop_machine
+      puts "success size:#{@@succeed_size}"
+      puts "failed size:#{@@failed_size}"
+      @@end_time = Time.now
+      puts "total use time:#{@@end_time-@@begin_time} seconds"
+      EventMachine.stop
+      @@url_set.clear
+    end
+
+    def get_next_task
+      todo = []
+
+      until todo.size >= @@max || @@down_list.empty? do
+        e = @@down_list.shift
+        if @@url_set.add?(e.href)
+          todo << e
+        end
+      end
+
+      return todo
     end
 
     def complete(multi, success_list, failed_list)
@@ -158,16 +165,13 @@ module ListSpider
         e.parse_method.call(e.local_path, e.extra_data) if e.parse_method
       end
 
-      todo = @@down_list.slice!(0, @@max)
+      todo = get_next_task
+
       if todo.empty?
-        puts "success size:#{@@succeed_size}"
-        puts "failed size:#{@@failed_size}"
-        @@end_time = Time.now
-        puts "total use time:#{@@end_time-@@begin_time} seconds"
-        EventMachine.stop
+        stop_machine
       else
         if @@inter_val != 0
-          if success_list.size != 0 || failed_list.size !=0
+          if success_list.size != 0 || failed_list.size != 0
             if @@inter_val == RANDOM_TIME
               sleep(rand(@@random_time_range))
             else
@@ -183,7 +187,11 @@ module ListSpider
       EventMachine.run {
         @@begin_time = Time.now
         if down_list.empty?
-          callback.call(nil, [], []) if callback
+          if callback
+            callback.call(nil, [], [])
+          else
+            stop_machine
+          end
         else
           event_machine_down(down_list, callback)
         end
@@ -204,7 +212,7 @@ module ListSpider
 
     def get_list(down_list, inter_val: 0, max: 30)
       @@down_list = []
-      
+
       need_down_list = filter_list(down_list)
 
       @@down_list = @@down_list + need_down_list
@@ -215,7 +223,7 @@ module ListSpider
       @@failed_size = 0
 
       puts "total size:#{@@down_list.size}"
-      event_machine_start_list(@@down_list.slice!(0, @@max), method(:complete))
+      event_machine_start_list(get_next_task, method(:complete))
     end
 
     def get_one(task)
