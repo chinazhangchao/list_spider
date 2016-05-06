@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'list_spider'
-  s.version     = '0.1.3'
-  s.date        = '2016-05-05'
+  s.version     = '0.1.4'
+  s.date        = '2016-05-06'
   s.summary     = "List Spider"
   s.description = "A url list spider based on em-http-request."
   s.authors     = ["Charles Zhang"]

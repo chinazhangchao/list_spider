@@ -33,11 +33,11 @@ module ListSpider
   RANDOM_TIME = -1
   NO_LIMIT_CONCURRENT = -1
 
-  @@random_time_range = 3..10
-  @@conver_to_utf8 = false
-  @@connection_opts = {:connect_timeout => 2*60}
-  @@overwrite_exist = false
-  @@max_redirects = 10
+  @random_time_range = 3..10
+  @conver_to_utf8 = false
+  @connection_opts = {connect_timeout: 2*60}
+  @overwrite_exist = false
+  @max_redirects = 10
   @@url_set = Set.new
 
   class << self
@@ -45,17 +45,17 @@ module ListSpider
     attr_accessor :random_time_range, :conver_to_utf8, :overwrite_exist, :max_redirects
 
     def set_proxy(proxy_addr, proxy_port, username: nil, password: nil)
-      @@connection_opts = {
+      @connection_opts = {
         :proxy => {
         :host => proxy_addr,
         :port => proxy_port
       }
       }
-      @@connection_opts[:proxy][:authorization] = [username, password] if username && password
+      @connection_opts[:proxy][:authorization] = [username, password] if username && password
     end
 
     def connect_timeout(max_connect_time)
-      @@connection_opts[:connect_timeout] = max_connect_time
+      @connection_opts[:connect_timeout] = max_connect_time
     end
 
     def set_header_option(header_option)
@@ -70,19 +70,19 @@ module ListSpider
 
       for_each_proc = proc do |e|
         opt = {}
-        opt = {:redirects => @@max_redirects}
+        opt = {:redirects => @max_redirects}
         opt[:head] = @@header_option if defined? @@header_option
         if e.http_method == :post
           opt[:body] = e.params unless e.params.empty?
-          if @@connection_opts
-            w = EventMachine::HttpRequest.new(e.href, @@connection_opts).post opt
+          if @connection_opts
+            w = EventMachine::HttpRequest.new(e.href, @connection_opts).post opt
           else
             w = EventMachine::HttpRequest.new(e.href).post opt
           end
         else
-          if @@connection_opts
+          if @connection_opts
             opt[:query] = e.params unless e.params.empty?
-            w = EventMachine::HttpRequest.new(e.href, @@connection_opts).get opt
+            w = EventMachine::HttpRequest.new(e.href, @connection_opts).get opt
           else
             w = EventMachine::HttpRequest.new(e.href).get opt
           end
@@ -96,7 +96,7 @@ module ListSpider
             FileUtils.mkdir_p(local_dir) unless Dir.exist?(local_dir)
             begin
               File.open(e.local_path, "w") do |f|
-                if @@conver_to_utf8 == true
+                if @conver_to_utf8 == true
                   f << SpiderHelper.to_utf8( w.response)
                 else
                   f << w.response
@@ -173,7 +173,7 @@ module ListSpider
         if @@inter_val != 0
           if success_list.size != 0 || failed_list.size != 0
             if @@inter_val == RANDOM_TIME
-              sleep(rand(@@random_time_range))
+              sleep(rand(@random_time_range))
             else
               sleep(@@inter_val)
             end
@@ -201,7 +201,7 @@ module ListSpider
     def filter_list(down_list)
       need_down_list = []
       down_list.each do |ts|
-        if !@@overwrite_exist && File.exist?(ts.local_path)
+        if !@overwrite_exist && File.exist?(ts.local_path)
           ts.parse_method.call(ts.local_path, ts.extra_data) if ts.parse_method
         else
           need_down_list << ts
