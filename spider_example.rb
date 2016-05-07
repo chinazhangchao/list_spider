@@ -19,11 +19,5 @@ def parse_index_item(file_name, extra_data)
   ListSpider.add_task(article_list)
 end
 
-DeleteUnvalid.delete(CustomConfig::DIR + '*', size_threshold: 300)
-
-task_list = []
-task_list << TaskStruct.new('http://www.yinwang.org/', CustomConfig::DIR+'index.html', parse_method: method(:parse_index_item))
-
-ListSpider.get_list(task_list)
-
-DeleteUnvalid.delete(CustomConfig::DIR + '*', size_threshold: 300)
+#get_one is a simple function for one taskstruct situation
+ListSpider.get_one(TaskStruct.new('http://www.yinwang.org/', CustomConfig::DIR+'index.html', parse_method: method(:parse_index_item)), max: 50)

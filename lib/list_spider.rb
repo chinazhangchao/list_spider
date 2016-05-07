@@ -226,8 +226,8 @@ module ListSpider
       event_machine_start_list(get_next_task, method(:complete))
     end
 
-    def get_one(task)
-      get_list([task])
+    def get_one(task, inter_val: 0, max: 30)
+      get_list([task], inter_val: inter_val, max: max)
     end
 
     def add_task(task)

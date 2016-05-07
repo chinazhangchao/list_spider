@@ -63,16 +63,9 @@ def parse_index_item(file_name, extra_data)
   ListSpider.add_task(article_list)
 end
 
-task_list = []
-task_list << TaskStruct.new('http://www.yinwang.org/', CustomConfig::DIR+'index.html', parse_method: method(:parse_index_item))
+#get_one is a simple function for one taskstruct situation
+ListSpider.get_one(TaskStruct.new('http://www.yinwang.org/', CustomConfig::DIR+'index.html', parse_method: method(:parse_index_item)), max: 50)
 
-ListSpider.get_list(task_list)
-
-```
-
-## You can use even simpler like this, but you can't designate interval and max concurrent with this method.
-```ruby
-ListSpider.get_one(TaskStruct.new('http://www.yinwang.org/', CustomConfig::DIR+'index.html', parse_method: method(:parse_index_item)))
 ```
 
 ## And there are many options you can use
