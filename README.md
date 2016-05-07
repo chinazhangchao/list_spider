@@ -18,8 +18,8 @@ Many times we only need to spider by url list then parse them and spider again. 
 ## Getting started
 
     gem install list_spider
-    
-## Use like this:
+
+## Use like this
 ```ruby
 require 'list_spider'
 
@@ -93,7 +93,7 @@ ListSpider.get_list(down_list, inter_val: 0, max: ListSpider::NO_LIMIT_CONCURREN
 ListSpider.get_list(down_list, inter_val: ListSpider::RANDOM_TIME, max: 1)
 ```
 
-###options below will take effect in the whole program
+###Options below will take effect in the whole program
 
 ```ruby
 #set proxy
