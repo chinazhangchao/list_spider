@@ -51,7 +51,7 @@ ListSpider.get_list($next_list, max: 50)
 
 ```
 
-## Or in one step (in simple situation)
+## Or in one step
 ```ruby
 require 'list_spider'
 
@@ -74,7 +74,7 @@ def parse_index_item(file_name, extra_data)
   ListSpider.add_task(article_list)
 end
 
-#get_one is a simple function for one taskstruct situation
+#get_one is a simpler function for one taskstruct situation, it is equal to get_list with a one taskstruct array.
 ListSpider.get_one(TaskStruct.new('http://www.yinwang.org/', CustomConfig::DIR+'index.html', parse_method: method(:parse_index_item)), max: 50)
 
 ```
@@ -86,12 +86,14 @@ TaskStruct.new(href, local_path, http_method: :get, params: {}, extra_data: nil,
 ```
 
 ```ruby
-#no concurrent limit
-ListSpider.new(down_list, inter_val: 0, max: ListSpider::NO_LIMIT_CONCURRENT).start
+#no concurrent limit (note: only use when list size is small)
+ListSpider.get_list(down_list, inter_val: 0, max: ListSpider::NO_LIMIT_CONCURRENT)
 
 #sleep random time, often used in site which limit spider
-ListSpider.new(down_list, inter_val: ListSpider::RANDOM_TIME, max: 1).start
+ListSpider.get_list(down_list, inter_val: ListSpider::RANDOM_TIME, max: 1)
 ```
+
+###options below will take effect in the whole program
 
 ```ruby
 #set proxy
