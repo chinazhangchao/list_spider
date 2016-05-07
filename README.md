@@ -4,6 +4,13 @@ A url list spider based on em-http-request.
 
 Many times we only need to spider by url list then parse them and spider again. This is for the purpose.
 
+## Features
+1.Duplicate url filtering (based on local path, so you can custom your behavior).
+2.Converting to UTF-8 support.
+3.Increased spider (don't spider exist).
+4.Custom concurrent number and interval between task.
+5.Http options support.
+
 ## Getting started
 
     gem install list_spider
