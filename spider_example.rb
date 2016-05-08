@@ -18,4 +18,4 @@ def parse_index_item(file_name, extra_data)
 end
 
 #get_one is a simple function for one taskstruct situation
-ListSpider.get_one(TaskStruct.new('http://www.yinwang.org/', DOWNLOAD_DIR + 'index.html', parse_method: method(:parse_index_item)), max: 50)
+ListSpider.get_one(TaskStruct.new('http://www.yinwang.org/', DOWNLOAD_DIR + 'index.html', parse_method: method(:parse_index_item)), max: 60)
