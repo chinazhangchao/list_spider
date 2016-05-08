@@ -32,6 +32,8 @@ module ListSpider
 
   RANDOM_TIME = -1
   NO_LIMIT_CONCURRENT = -1
+  DEFAULT_CONCURRNET_MAX = 50
+  DEFAULT_INTERVAL = 0
 
   @random_time_range = 3..10
   @conver_to_utf8 = false
@@ -210,7 +212,7 @@ module ListSpider
       return need_down_list
     end
 
-    def get_list(down_list, inter_val: 0, max: 30)
+    def get_list(down_list, inter_val: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
       @@down_list = []
 
       need_down_list = filter_list(down_list)
@@ -226,7 +228,7 @@ module ListSpider
       event_machine_start_list(get_next_task, method(:complete))
     end
 
-    def get_one(task, inter_val: 0, max: 30)
+    def get_one(task, inter_val: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
       get_list([task], inter_val: inter_val, max: max)
     end
 

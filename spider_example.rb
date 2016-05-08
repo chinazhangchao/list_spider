@@ -1,8 +1,6 @@
 require 'list_spider'
 
-module CustomConfig
-  DIR = 'wangyin/'
-end
+DOWNLOAD_DIR = 'wangyin/'
 
 def parse_index_item(file_name, extra_data)
   content = File.read(file_name)
@@ -13,11 +11,11 @@ def parse_index_item(file_name, extra_data)
   article_list = []
   link_list.each do |link|
     href = link['href']
-    local_path = CustomConfig::DIR + link.content + ".html"
+    local_path = DOWNLOAD_DIR + link.content + ".html"
     article_list << TaskStruct.new(href, local_path)
   end
   ListSpider.add_task(article_list)
 end
 
 #get_one is a simple function for one taskstruct situation
-ListSpider.get_one(TaskStruct.new('http://www.yinwang.org/', CustomConfig::DIR+'index.html', parse_method: method(:parse_index_item)), max: 50)
+ListSpider.get_one(TaskStruct.new('http://www.yinwang.org/', DOWNLOAD_DIR + 'index.html', parse_method: method(:parse_index_item)), max: 50)

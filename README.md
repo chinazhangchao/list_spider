@@ -11,7 +11,7 @@ Many times we only need to spider by url list then parse them and spider again. 
 
 * Increased spider support (don't spider exist).
 
-* Custom concurrent number and interval between task.
+* Customize concurrent number and interval between task.
 
 * Http options support.
 
@@ -93,7 +93,7 @@ ListSpider.get_list(down_list, inter_val: 0, max: ListSpider::NO_LIMIT_CONCURREN
 ListSpider.get_list(down_list, inter_val: ListSpider::RANDOM_TIME, max: 1)
 ```
 
-###Options below will take effect in the whole program
+###Options below will take effect in the whole program (set them before call get_list)
 
 ```ruby
 #set proxy

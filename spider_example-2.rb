@@ -1,8 +1,6 @@
 require 'list_spider'
 
-module CustomConfig
-  DIR = 'wangyin/'
-end
+DOWNLOAD_DIR = 'wangyin/'
 
 $next_list = []
 
@@ -14,14 +12,14 @@ def parse_index_item(file_name, extra_data)
 
   link_list.each do |link|
     href = link['href']
-    local_path = CustomConfig::DIR + link.content + ".html"
+    local_path = DOWNLOAD_DIR + link.content + ".html"
     #or you can save them to database for later use
     $next_list<< TaskStruct.new(href, local_path)
   end
 end
 
 task_list = []
-task_list << TaskStruct.new('http://www.yinwang.org/', CustomConfig::DIR+'index.html', parse_method: method(:parse_index_item))
+task_list << TaskStruct.new('http://www.yinwang.org/', DOWNLOAD_DIR + 'index.html', parse_method: method(:parse_index_item))
 
 ListSpider.get_list(task_list)
 ListSpider.get_list($next_list, max: 50)
