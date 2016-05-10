@@ -4,7 +4,7 @@ DOWNLOAD_DIR = 'wangyin/'
 
 $next_list = []
 
-def parse_index_item(file_name, extra_data)
+def parse_index_item(file_name)
   content = File.read(file_name)
   doc = Nokogiri::HTML(content)
   list_group = doc.css("ul.list-group")

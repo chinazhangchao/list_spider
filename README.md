@@ -75,6 +75,25 @@ ListSpider.get_one(TaskStruct.new('http://www.yinwang.org/', DOWNLOAD_DIR + 'ind
 
 ```
 
+## You can use parse method in three forms:
+
+```ruby
+parse_response(file_name)
+
+
+# extra_data is passed by TaskStruct's extra_data param
+
+parse_response(file_name, extra_data)
+
+
+# response_header is a EventMachine::HttpResponseHeader object
+# you can use it like this:
+# response_header.status
+# response_header['Last-Modified']
+
+parse_response(file_name, extra_data, response_header)
+```
+
 ## And there are many options you can use
 
 ```ruby

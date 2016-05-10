@@ -2,7 +2,12 @@ require 'list_spider'
 
 DOWNLOAD_DIR = 'wangyin/'
 
-def parse_index_item(file_name, extra_data)
+def parse_index_item(file_name, extra_data, response_header)
+  # response_header is a EventMachine::HttpResponseHeader object
+  # you can use it like this:
+  # response_header.status
+  # response_header['Last-Modified']
+
   content = File.read(file_name)
   doc = Nokogiri::HTML(content)
   list_group = doc.css("ul.list-group")

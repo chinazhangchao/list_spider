@@ -24,7 +24,7 @@ class TaskStruct
     o.class == self.class && o.href == href && o.local_path == local_path && o.http_method == http_method && o.params == params && o.extra_data == extra_data
   end
 
-  attr_accessor :origin_href , :href, :local_path, :http_method, :params, :extra_data, :parse_method
+  attr_accessor :origin_href , :href, :local_path, :http_method, :params, :extra_data, :parse_method, :request_object
 
 end
 
@@ -90,6 +90,8 @@ module ListSpider
           end
         end
 
+        e.request_object = w
+
         w.callback {
           s = w.response_header.status
           puts s
@@ -122,7 +124,15 @@ module ListSpider
             SpiderHelper.direct_http_post(e.href, e.local_path, e.params)
           end
         }
-        multi.add e.local_path, w
+
+        begin
+          multi.add e.local_path, w
+        rescue Exception => exception
+          puts exception
+          puts e.href
+          puts e.local_path
+          stop_machine
+        end
       end
 
       cb = Proc.new do
@@ -148,23 +158,32 @@ module ListSpider
     end
 
     def get_next_task
-      todo = []
+      return @@down_list.shift(@@max)
+    end
 
-      until todo.size >= @@max || @@down_list.empty? do
-        e = @@down_list.shift
-        if @@url_set.add?(e.href)
-          todo << e
+    def call_parse_method(e)
+      pm = e.parse_method
+      if pm
+        case pm.arity
+        when 1
+          pm.call(e.local_path)
+        when 2
+          pm.call(e.local_path, e.extra_data)
+        when 3
+          res_header = nil
+          res_header = e.request_object.response_header if e.request_object
+          pm.call(e.local_path, e.extra_data, res_header)
+        else
+          puts "Error! The number of arguments is:#{pm.arity}. While expected number is 1, 2, 3"
         end
       end
-
-      return todo
     end
 
     def complete(multi, success_list, failed_list)
       @@succeed_size += success_list.size
       @@failed_size += failed_list.size
       success_list.each do |e|
-        e.parse_method.call(e.local_path, e.extra_data) if e.parse_method
+        call_parse_method(e)
       end
 
       todo = get_next_task
@@ -204,8 +223,8 @@ module ListSpider
       need_down_list = []
       down_list.each do |ts|
         if !@overwrite_exist && File.exist?(ts.local_path)
-          ts.parse_method.call(ts.local_path, ts.extra_data) if ts.parse_method
-        else
+          call_parse_method(ts)
+        elsif @@url_set.add?(ts.href)
           need_down_list << ts
         end
       end
