@@ -37,10 +37,10 @@ module ListSpider
 
   @random_time_range = 3..10
   @conver_to_utf8 = false
-  @connection_opts = {connect_timeout: 2*60}
+  @connection_opts = {connect_timeout: 60}
   @overwrite_exist = false
   @max_redirects = 10
-  @@url_set = Set.new
+  @@local_path_set = Set.new
 
   class << self
 
@@ -61,7 +61,7 @@ module ListSpider
     end
 
     def set_header_option(header_option)
-      @@header_option = optHash
+      @@header_option = header_option
     end
 
     def event_machine_down(link_struct_list, callback = nil)
@@ -154,7 +154,7 @@ module ListSpider
       @@end_time = Time.now
       puts "total use time:#{@@end_time-@@begin_time} seconds"
       EventMachine.stop
-      @@url_set.clear
+      @@local_path_set.clear
     end
 
     def get_next_task
@@ -224,7 +224,7 @@ module ListSpider
       down_list.each do |ts|
         if !@overwrite_exist && File.exist?(ts.local_path)
           call_parse_method(ts)
-        elsif @@url_set.add?(ts.href)
+        elsif @@local_path_set.add?(ts.local_path)
           need_down_list << ts
         end
       end
@@ -262,6 +262,11 @@ module ListSpider
         puts "error task type:#{task.class}"
       end
     end
-
   end
+
+  Signal.trap("INT") do
+    ListSpider.stop_machine
+    exit!
+  end
+
 end
