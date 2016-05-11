@@ -75,7 +75,7 @@ ListSpider.get_one(TaskStruct.new('http://www.yinwang.org/', DOWNLOAD_DIR + 'ind
 
 ```
 
-## You can define parse method in three forms
+## You can define parse method in four forms
 
 ```ruby
 def parse_response(file_name)
@@ -99,6 +99,23 @@ end
 def parse_response(file_name, extra_data, response_header)
   response_header.status
   response_header['Last-Modified']
+
+  #...
+end
+
+# req is a EventMachine::HttpClientOptions object
+# you can use it like this:
+# req.body
+# req.headers
+# req.uri
+# req.host
+# req.port
+def parse_response(file_name, extra_data, response_header, req)
+  puts req.body
+  puts req.headers
+  puts req.uri
+  puts req.host
+  puts req.port
 
   #...
 end
