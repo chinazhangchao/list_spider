@@ -93,6 +93,7 @@ end
 # response_header is a EventMachine::HttpResponseHeader object
 # you can use it like this:
 # response_header.status
+# response_header.cookie
 # response_header['Last-Modified']
 
 def parse_response(file_name, extra_data, response_header)

@@ -173,6 +173,14 @@ module ListSpider
           res_header = nil
           res_header = e.request_object.response_header if e.request_object
           pm.call(e.local_path, e.extra_data, res_header)
+        when 4
+          res_header = nil
+          res_header = e.request_object.response_header if e.request_object
+
+          req = nil
+          req = e.request_object.req if e.request_object
+
+          pm.call(e.local_path, e.extra_data, res_header, req)
         else
           puts "Error! The number of arguments is:#{pm.arity}. While expected number is 1, 2, 3"
         end
