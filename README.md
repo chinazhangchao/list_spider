@@ -130,10 +130,13 @@ TaskStruct.new(href, local_path, http_method: :get, params: {}, extra_data: nil,
 
 ```ruby
 #no concurrent limit (note: only use when list size is small)
-ListSpider.get_list(down_list, inter_val: 0, max: ListSpider::NO_LIMIT_CONCURRENT)
+ListSpider.get_list(down_list, interval: 0, max: ListSpider::NO_LIMIT_CONCURRENT)
 
 #sleep random time, often used in site which limit spider
-ListSpider.get_list(down_list, inter_val: ListSpider::RANDOM_TIME, max: 1)
+ListSpider.get_list(down_list, interval: ListSpider::RANDOM_TIME, max: 1)
+
+ListSpider.get_list(down_list, interval: (1..10), max: 1)
+
 ```
 
 ###Options below will take effect in the whole program (set them before call get_list)

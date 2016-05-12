@@ -199,12 +199,12 @@ module ListSpider
       if todo.empty?
         stop_machine
       else
-        if @@inter_val != 0
+        if @@interval != 0
           if success_list.size != 0 || failed_list.size != 0
-            if @@inter_val == RANDOM_TIME
+            if @@interval == RANDOM_TIME
               sleep(rand(@random_time_range))
             else
-              sleep(@@inter_val)
+              sleep(@@interval)
             end
           end
         end
@@ -239,13 +239,18 @@ module ListSpider
       return need_down_list
     end
 
-    def get_list(down_list, inter_val: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
+    def get_list(down_list, interval: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
+      if interval.is_a?Range
+        @random_time_range = interval
+        interval = RANDOM_TIME
+      end
+
       @@down_list = []
 
       need_down_list = filter_list(down_list)
 
       @@down_list = @@down_list + need_down_list
-      @@inter_val = inter_val
+      @@interval = interval
       @@max = max
       @@max = @@down_list.size if @@max == NO_LIMIT_CONCURRENT
       @@succeed_size = 0
@@ -255,8 +260,8 @@ module ListSpider
       event_machine_start_list(get_next_task, method(:complete))
     end
 
-    def get_one(task, inter_val: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
-      get_list([task], inter_val: inter_val, max: max)
+    def get_one(task, interval: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
+      get_list([task], interval: interval, max: max)
     end
 
     def add_task(task)
