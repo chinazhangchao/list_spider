@@ -135,6 +135,7 @@ ListSpider.get_list(down_list, interval: 0, max: ListSpider::NO_LIMIT_CONCURRENT
 #sleep random time, often used in site which limit spider
 ListSpider.get_list(down_list, interval: ListSpider::RANDOM_TIME, max: 1)
 
+#set random time range
 ListSpider.get_list(down_list, interval: (1..10), max: 1)
 
 ```
@@ -160,8 +161,6 @@ ListSpider.overwrite_exist = false
 #set redirect depth
 ListSpider.max_redirects = 10
 
-#set random time range when use ListSpider::RANDOM_TIME
-ListSpider.random_time_range = 3..10
 ```
 
 ## There is a util class to help delete unvalid file

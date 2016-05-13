@@ -40,11 +40,11 @@ module ListSpider
   @connection_opts = {connect_timeout: 60}
   @overwrite_exist = false
   @max_redirects = 10
-  @@local_path_set = Set.new
+  @local_path_set = Set.new
 
   class << self
 
-    attr_accessor :random_time_range, :conver_to_utf8, :overwrite_exist, :max_redirects
+    attr_accessor :conver_to_utf8, :overwrite_exist, :max_redirects
 
     def set_proxy(proxy_addr, proxy_port, username: nil, password: nil)
       @connection_opts = {
@@ -61,7 +61,7 @@ module ListSpider
     end
 
     def set_header_option(header_option)
-      @@header_option = header_option
+      @header_option = header_option
     end
 
     def event_machine_down(link_struct_list, callback = nil)
@@ -73,7 +73,7 @@ module ListSpider
       for_each_proc = proc do |e|
         opt = {}
         opt = {:redirects => @max_redirects}
-        opt[:head] = @@header_option if defined? @@header_option
+        opt[:head] = @header_option if defined? @header_option
         if e.http_method == :post
           opt[:body] = e.params unless e.params.empty?
           if @connection_opts
@@ -149,16 +149,16 @@ module ListSpider
     end
 
     def stop_machine
-      puts "success size:#{@@succeed_size}"
-      puts "failed size:#{@@failed_size}"
-      @@end_time = Time.now
-      puts "total use time:#{@@end_time-@@begin_time} seconds"
+      puts "success size:#{@succeed_size}"
+      puts "failed size:#{@failed_size}"
+      @end_time = Time.now
+      puts "total use time:#{@end_time-@begin_time} seconds"
       EventMachine.stop
-      @@local_path_set.clear
+      @local_path_set.clear
     end
 
     def get_next_task
-      return @@down_list.shift(@@max)
+      return @down_list.shift(@max)
     end
 
     def call_parse_method(e)
@@ -188,8 +188,8 @@ module ListSpider
     end
 
     def complete(multi, success_list, failed_list)
-      @@succeed_size += success_list.size
-      @@failed_size += failed_list.size
+      @succeed_size += success_list.size
+      @failed_size += failed_list.size
       success_list.each do |e|
         call_parse_method(e)
       end
@@ -199,12 +199,12 @@ module ListSpider
       if todo.empty?
         stop_machine
       else
-        if @@interval != 0
+        if @interval != 0
           if success_list.size != 0 || failed_list.size != 0
-            if @@interval == RANDOM_TIME
+            if @interval == RANDOM_TIME
               sleep(rand(@random_time_range))
             else
-              sleep(@@interval)
+              sleep(@interval)
             end
           end
         end
@@ -214,7 +214,7 @@ module ListSpider
 
     def event_machine_start_list(down_list, callback = nil)
       EventMachine.run {
-        @@begin_time = Time.now
+        @begin_time = Time.now
         if down_list.empty?
           if callback
             callback.call(nil, [], [])
@@ -232,7 +232,7 @@ module ListSpider
       down_list.each do |ts|
         if !@overwrite_exist && File.exist?(ts.local_path)
           call_parse_method(ts)
-        elsif @@local_path_set.add?(ts.local_path)
+        elsif @local_path_set.add?(ts.local_path)
           need_down_list << ts
         end
       end
@@ -245,18 +245,18 @@ module ListSpider
         interval = RANDOM_TIME
       end
 
-      @@down_list = []
+      @down_list = []
 
       need_down_list = filter_list(down_list)
 
-      @@down_list = @@down_list + need_down_list
-      @@interval = interval
-      @@max = max
-      @@max = @@down_list.size if @@max == NO_LIMIT_CONCURRENT
-      @@succeed_size = 0
-      @@failed_size = 0
+      @down_list = @down_list + need_down_list
+      @interval = interval
+      @max = max
+      @max = @down_list.size if @max == NO_LIMIT_CONCURRENT
+      @succeed_size = 0
+      @failed_size = 0
 
-      puts "total size:#{@@down_list.size}"
+      puts "total size:#{@down_list.size}"
       event_machine_start_list(get_next_task, method(:complete))
     end
 
@@ -267,10 +267,10 @@ module ListSpider
     def add_task(task)
       if task.is_a?Array
         need_down_list = filter_list(task)
-        @@down_list = @@down_list + need_down_list
+        @down_list = @down_list + need_down_list
       elsif task.is_a?TaskStruct
         need_down_list = filter_list([task])
-        @@down_list = @@down_list + need_down_list
+        @down_list = @down_list + need_down_list
       else
         puts "error task type:#{task.class}"
       end
