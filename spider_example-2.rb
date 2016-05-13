@@ -19,7 +19,10 @@ def parse_index_item(file_name)
 end
 
 task_list = []
-task_list << TaskStruct.new('http://www.yinwang.org/', DOWNLOAD_DIR + 'index.html', parse_method: method(:parse_index_item))
+task_list << TaskStruct.new(
+  'http://www.yinwang.org/',
+  DOWNLOAD_DIR + 'index.html',
+  parse_method: method(:parse_index_item))
 
 ListSpider.get_list(task_list)
 ListSpider.get_list($next_list, max: 60)
