@@ -128,7 +128,7 @@ end
 ## And there are many options you can use
 
 ```ruby
-TaskStruct.new(href, local_path, http_method: :get, params: {}, extra_data: nil, parse_method: nil)
+TaskStruct.new(href, local_path, http_method: :get, params: {}, extra_data: nil, parse_method: nil, header: nil)
 ```
 
 ```ruby
@@ -149,7 +149,7 @@ ListSpider.get_list(down_list, interval: (1..10), max: 1)
 #set proxy
 ListSpider.set_proxy(proxy_addr, proxy_port, username: nil, password: nil)
 
-#set http header
+#set http header (if TaskStruct has header it will be used priority)
 ListSpider.set_header_option(header_option)
 
 #convert the file encoding to utf-8
