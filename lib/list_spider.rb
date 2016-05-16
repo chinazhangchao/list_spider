@@ -4,10 +4,10 @@ require 'fileutils'
 require 'set'
 require "addressable/uri"
 require File.expand_path('../spider_helper', __FILE__)
-require File.expand_path('../delete_unvalid', __FILE__)
+require File.expand_path('../file_filter', __FILE__)
 
 class TaskStruct
-  def initialize(href, local_path, http_method: :get, params: {}, extra_data: nil, parse_method: nil)
+  def initialize(href, local_path, http_method: :get, params: {}, extra_data: nil, parse_method: nil, header: nil)
     @origin_href = href
     @href = href
     if @href.class == "".class
@@ -18,13 +18,14 @@ class TaskStruct
     @params = params
     @extra_data = extra_data
     @parse_method = parse_method
+    @header = header
   end
 
   def == (o)
-    o.class == self.class && o.href == href && o.local_path == local_path && o.http_method == http_method && o.params == params && o.extra_data == extra_data
+    o.class == self.class && o.href == href && o.local_path == local_path && o.http_method == http_method && o.params == params && o.extra_data == extra_data && o.header == header
   end
 
-  attr_accessor :origin_href , :href, :local_path, :http_method, :params, :extra_data, :parse_method, :request_object
+  attr_accessor :origin_href , :href, :local_path, :http_method, :params, :extra_data, :parse_method, :request_object, :header
 
 end
 
@@ -73,7 +74,12 @@ module ListSpider
       for_each_proc = proc do |e|
         opt = {}
         opt = {:redirects => @max_redirects}
-        opt[:head] = @header_option if defined? @header_option
+        if e.header
+          opt[:head] = e.header
+        elsif defined? @header_option
+          opt[:head] = @header_option 
+        end
+
         if e.http_method == :post
           opt[:body] = e.params unless e.params.empty?
           if @connection_opts
@@ -182,7 +188,7 @@ module ListSpider
 
           pm.call(e.local_path, e.extra_data, res_header, req)
         else
-          puts "Error! The number of arguments is:#{pm.arity}. While expected number is 1, 2, 3"
+          puts "Error! The number of arguments is:#{pm.arity}. While expected number is 1, 2, 3, 4"
         end
       end
     end

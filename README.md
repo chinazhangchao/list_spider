@@ -166,13 +166,19 @@ ListSpider.max_redirects = 10
 
 ```
 
-## There is a util class to help delete unvalid file
+## There is a util class to help check or delete unvalid file
 
 ```ruby
-DeleteUnvalid.delete(CustomConfig::DIR + '*', size_threshold: 300)
+FileFilter.delete(CustomConfig::DIR + '*', size_threshold: 300)
 
-#its params
-DeleteUnvalid.delete(dir_pattern, size_threshold: 1000, cust_judge: nil)
+FileFilter.check(CustomConfig::DIR + '*', size_threshold: 300)
+
+FileFilter.check_save_result(CustomConfig::DIR + '*', size_threshold: 300)
+
+#params
+FileFilter.delete(dir_pattern, size_threshold: 1000, cust_judge: nil)
+
+FileFilter.check_save_result(dir_pattern, save_file_name: 'filtered_file.txt', size_threshold: 1000, cust_judge: nil)
 ```
 
 ### License
