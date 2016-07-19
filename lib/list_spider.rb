@@ -19,8 +19,8 @@ class TaskStruct
     @header = header
   end
 
-  def ==(o)
-    o.class == self.class && o.href == href && o.local_path == local_path && o.http_method == http_method && o.params == params && o.extra_data == extra_data && o.header == header
+  def ==(other)
+    other.class == self.class && other.href == href && other.local_path == local_path && other.http_method == http_method && other.params == params && other.extra_data == extra_data && other.header == header
   end
 
   attr_accessor :origin_href, :href, :local_path, :http_method, :params, :extra_data, :parse_method, :request_object, :header
@@ -68,7 +68,6 @@ module ListSpider
 
       for_each_proc =
         proc do |e|
-          opt = {}
           opt = { redirects: @max_redirects }
           if e.header
             opt[:head] = e.header
@@ -83,7 +82,7 @@ module ListSpider
                 EventMachine::HttpRequest.new(e.href, @connection_opts).post opt
               else
                 EventMachine::HttpRequest.new(e.href).post opt
-                                  end
+              end
           else
             if @connection_opts
               opt[:query] = e.params unless e.params.empty?
@@ -110,7 +109,7 @@ module ListSpider
                        end
                 end
                 succeed_list << e
-              rescue Exception => e
+              rescue => e
                 puts e
               end
             end
@@ -130,7 +129,7 @@ module ListSpider
 
           begin
             multi.add e.local_path, w
-          rescue Exception => exception
+          rescue => exception
             puts exception
             puts e.href
             puts e.local_path
@@ -148,8 +147,8 @@ module ListSpider
             callback.call(multi, succeed_list, failed_list)
           end
         end
-      link_struct_list.each &for_each_proc
-      multi.callback &cb
+      link_struct_list.each(&for_each_proc)
+      multi.callback(&cb)
     end
 
     def stop_machine
@@ -161,7 +160,7 @@ module ListSpider
       @local_path_set.clear
     end
 
-    def get_next_task
+    def next_task
       @down_list.shift(@max)
     end
 
@@ -198,7 +197,7 @@ module ListSpider
         call_parse_method(e)
       end
 
-      todo = get_next_task
+      todo = next_task
 
       if todo.empty?
         stop_machine
@@ -261,7 +260,7 @@ module ListSpider
       @failed_size = 0
 
       puts "total size:#{@down_list.size}"
-      event_machine_start_list(get_next_task, method(:complete))
+      event_machine_start_list(next_task, method(:complete))
     end
 
     def get_one(task, interval: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)

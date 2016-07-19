@@ -24,7 +24,7 @@ module SpiderHelper
         else
           puts res
         end
-      rescue Exception => e
+      rescue => e
         puts e.backtrace
         puts e
       end
@@ -50,7 +50,7 @@ module SpiderHelper
         else
           puts res
         end
-      rescue Exception => e
+      rescue => e
         puts e
       end
     end
@@ -86,8 +86,8 @@ module SpiderHelper
         puts cd['encoding']
         str.force_encoding(cd['encoding'])
         # 移除BOM头
-        bomHeader = BomHeaderMap[cd['encoding']]
-        str.sub!(bomHeader, '') if bomHeader
+        bom_header = BomHeaderMap[cd['encoding']]
+        str.sub!(bom_header, '') if bom_header
       end
       str.encode!(Encoding::UTF_8, undef: :replace, replace: '?', invalid: :replace)
 
