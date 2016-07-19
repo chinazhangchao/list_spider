@@ -101,7 +101,7 @@ module ListSpider
               local_dir = File.dirname(e.local_path)
               FileUtils.mkdir_p(local_dir) unless Dir.exist?(local_dir)
               begin
-                File.open(e.local_path, 'w') do |f|
+                File.open(e.local_path, 'wb') do |f|
                   f << if @conver_to_utf8 == true
                          SpiderHelper.to_utf8(w.response)
                        else
