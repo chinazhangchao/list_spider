@@ -1,4 +1,5 @@
 require 'list_spider'
+# require File.expand_path('../lib/list_spider', __FILE__)
 
 DOWNLOAD_DIR = 'wangyin/'.freeze
 
@@ -14,6 +15,8 @@ def parse_index_item(file_name)
     ListSpider.add_task(TaskStruct.new(href, local_path))
   end
 end
+
+# ListSpider.convert_to_utf8 = true
 
 # get_one is a simple function for one taskstruct situation
 ListSpider.get_one(

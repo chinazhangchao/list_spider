@@ -8,7 +8,6 @@ require File.expand_path('../file_filter', __FILE__)
 
 class TaskStruct
   def initialize(href, local_path, http_method: :get, params: {}, extra_data: nil, parse_method: nil, header: nil)
-    @origin_href = href
     @href = href
     @href = SpiderHelper.string_to_uri(@href) if @href.class == ''.class
     @local_path = local_path
@@ -23,7 +22,7 @@ class TaskStruct
     other.class == self.class && other.href == href && other.local_path == local_path && other.http_method == http_method && other.params == params && other.extra_data == extra_data && other.header == header
   end
 
-  attr_accessor :origin_href, :href, :local_path, :http_method, :params, :extra_data, :parse_method, :request_object, :header
+  attr_accessor :href, :local_path, :http_method, :params, :extra_data, :parse_method, :request_object, :header
 end
 
 module ListSpider
@@ -33,14 +32,14 @@ module ListSpider
   DEFAULT_INTERVAL = 0
 
   @random_time_range = 3..10
-  @conver_to_utf8 = false
+  @convert_to_utf8 = false
   @connection_opts = { connect_timeout: 60 }
   @overwrite_exist = false
   @max_redirects = 10
   @local_path_set = Set.new
 
   class << self
-    attr_accessor :conver_to_utf8, :overwrite_exist, :max_redirects
+    attr_accessor :convert_to_utf8, :overwrite_exist, :max_redirects
 
     def set_proxy(proxy_addr, proxy_port, username: nil, password: nil)
       @connection_opts = {
@@ -102,7 +101,7 @@ module ListSpider
               FileUtils.mkdir_p(local_dir) unless Dir.exist?(local_dir)
               begin
                 File.open(e.local_path, 'wb') do |f|
-                  f << if @conver_to_utf8 == true
+                  f << if @convert_to_utf8 == true
                          SpiderHelper.to_utf8(w.response)
                        else
                          w.response
@@ -115,15 +114,21 @@ module ListSpider
             end
           end
           w.errback do
-            puts "errback:#{w.response_header}"
-            puts e.origin_href
+            puts "errback:#{w.response_header},retry..."
             puts e.href
             puts w.response_header.status
-            failed_list << e
+
+            ret = false
             if e.http_method == :get
-              SpiderHelper.direct_http_get(e.href, e.local_path)
+              ret = SpiderHelper.direct_http_get(e.href, e.local_path, convert_to_utf8: @convert_to_utf8)
             elsif e.http_method == :post
-              SpiderHelper.direct_http_post(e.href, e.local_path, e.params)
+               ret = SpiderHelper.direct_http_post(e.href, e.local_path, e.params, convert_to_utf8: @convert_to_utf8)
+            end
+
+            if ret
+              succeed_list << e
+            else
+              failed_list << e
             end
           end
 

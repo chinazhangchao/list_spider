@@ -153,7 +153,7 @@ ListSpider.set_proxy(proxy_addr, proxy_port, username: nil, password: nil)
 ListSpider.set_header_option(header_option)
 
 #convert the file encoding to utf-8
-ListSpider.conver_to_utf8 = true
+ListSpider.convert_to_utf8 = true
 
 #set connect timeout
 ListSpider.connect_timeout = 2*60

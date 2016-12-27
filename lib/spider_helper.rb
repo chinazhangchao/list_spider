@@ -3,7 +3,7 @@ require 'net/http'
 
 module SpiderHelper
   class << self
-    def direct_http_get(href, local_path, params: nil, header: nil)
+    def direct_http_get(href, local_path, params: nil, header: nil, convert_to_utf8: false)
       href = string_to_uri(href) if href.class == ''.class
 
       begin
@@ -19,18 +19,23 @@ module SpiderHelper
         if res.is_a?(Net::HTTPSuccess)
           local_dir = File.dirname(local_path)
           FileUtils.mkdir_p(local_dir) unless Dir.exist?(local_dir)
-          File.write(local_path, res.body)
+          content = res.body
+          content = to_utf8(content) if convert_to_utf8
+          File.write(local_path, content)
           puts 'succeed'
+          return true
         else
           puts res
         end
       rescue => e
         puts e.backtrace
         puts e
+        false
       end
+      false
     end
 
-    def direct_http_post(href, local_path, params, header: nil)
+    def direct_http_post(href, local_path, params, header: nil, convert_to_utf8: false)
       href = string_to_uri(href) if href.class == ''.class
 
       begin
@@ -46,13 +51,19 @@ module SpiderHelper
         if res.is_a?(Net::HTTPSuccess)
           local_dir = File.dirname(local_path)
           FileUtils.mkdir_p(local_dir) unless Dir.exist?(local_dir)
-          File.write(local_path, res.body)
+          content = res.body
+          content = to_utf8(content) if convert_to_utf8s
+          File.write(local_path, content)
+          puts 'succeed'
+          return true
         else
           puts res
         end
       rescue => e
         puts e
+        false
       end
+      false
     end
 
     def extract_href_last(origin_href)
