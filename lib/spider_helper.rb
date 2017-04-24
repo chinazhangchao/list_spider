@@ -52,7 +52,7 @@ module SpiderHelper
           local_dir = File.dirname(local_path)
           FileUtils.mkdir_p(local_dir) unless Dir.exist?(local_dir)
           content = res.body
-          content = to_utf8(content) if convert_to_utf8s
+          content = to_utf8(content) if convert_to_utf8
           File.write(local_path, content)
           puts 'succeed'
           return true
