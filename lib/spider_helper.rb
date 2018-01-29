@@ -27,7 +27,7 @@ module SpiderHelper
         else
           puts res
         end
-      rescue => e
+      rescue StandardError => e
         puts e.backtrace
         puts e
         false
@@ -59,7 +59,7 @@ module SpiderHelper
         else
           puts res
         end
-      rescue => e
+      rescue StandardError => e
         puts e
         false
       end

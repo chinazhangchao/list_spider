@@ -1,4 +1,4 @@
-require "list_spider/version"
+require 'list_spider/version'
 require 'em-http-request'
 require 'nokogiri'
 require 'fileutils'
@@ -109,7 +109,7 @@ module ListSpider
                        end
                 end
                 succeed_list << e
-              rescue => e
+              rescue StandardError => e
                 puts e
               end
             end
@@ -123,7 +123,7 @@ module ListSpider
             if e.http_method == :get
               ret = SpiderHelper.direct_http_get(e.href, e.local_path, convert_to_utf8: @convert_to_utf8)
             elsif e.http_method == :post
-               ret = SpiderHelper.direct_http_post(e.href, e.local_path, e.params, convert_to_utf8: @convert_to_utf8)
+              ret = SpiderHelper.direct_http_post(e.href, e.local_path, e.params, convert_to_utf8: @convert_to_utf8)
             end
 
             if ret
@@ -135,7 +135,7 @@ module ListSpider
 
           begin
             multi.add e.local_path, w
-          rescue => exception
+          rescue StandardError => exception
             puts exception
             puts e.href
             puts e.local_path
@@ -249,7 +249,7 @@ module ListSpider
     end
 
     def get_list(down_list, interval: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
-      if interval.is_a?Range
+      if interval.is_a? Range
         @random_time_range = interval
         interval = RANDOM_TIME
       end
@@ -274,7 +274,7 @@ module ListSpider
     end
 
     def add_task(task)
-      if task.is_a?Array
+      if task.is_a? Array
         need_down_list = filter_list(task)
         @down_list += need_down_list
       elsif task.is_a?TaskStruct
