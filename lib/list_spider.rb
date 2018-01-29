@@ -1,3 +1,4 @@
+require "list_spider/version"
 require 'em-http-request'
 require 'nokogiri'
 require 'fileutils'
