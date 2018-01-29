@@ -23,14 +23,14 @@ Many times we only need to spider by url list then parse them and spider again. 
 ```ruby
 require 'list_spider'
 
-DOWNLOAD_DIR = 'wangyin/'
+DOWNLOAD_DIR = 'coolshell/'
 
 $next_list = []
 
 def parse_index_item(file_name)
   content = File.read(file_name)
   doc = Nokogiri::HTML(content)
-  list_group = doc.css("ul.list-group")
+  list_group = doc.css("h2.entry-title")
   link_list = list_group.css("a")
 
   link_list.each do |link|
@@ -42,7 +42,7 @@ def parse_index_item(file_name)
 end
 
 task_list = []
-task_list << TaskStruct.new('http://www.yinwang.org/', DOWNLOAD_DIR + 'index.html', parse_method: method(:parse_index_item))
+task_list << TaskStruct.new('https://coolshell.cn/', DOWNLOAD_DIR + 'index.html', parse_method: method(:parse_index_item))
 
 ListSpider.get_list(task_list)
 ListSpider.get_list($next_list, max: 60)
@@ -53,13 +53,13 @@ ListSpider.get_list($next_list, max: 60)
 ```ruby
 require 'list_spider'
 
-DOWNLOAD_DIR = 'wangyin/'
+DOWNLOAD_DIR = 'coolshell/'
 
 def parse_index_item(file_name)
 
   content = File.read(file_name)
   doc = Nokogiri::HTML(content)
-  list_group = doc.css("ul.list-group")
+  list_group = doc.css("h2.entry-title")
   link_list = list_group.css("a")
 
   link_list.each do |link|
@@ -71,7 +71,7 @@ end
 
 #get_one is a simple function for one taskstruct situation
 ListSpider.get_one(TaskStruct.new(
-  'http://www.yinwang.org/',
+  'https://coolshell.cn/',
   DOWNLOAD_DIR + 'index.html',
   parse_method: method(:parse_index_item)),
 max: 60)
