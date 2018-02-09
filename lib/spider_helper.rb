@@ -3,7 +3,8 @@ require 'net/http'
 
 module SpiderHelper
   class << self
-    def direct_http_get(href, local_path, params: nil, header: nil, convert_to_utf8: false)
+    def direct_http_get(href, local_path, params: nil,
+                        header: nil, convert_to_utf8: false)
       href = string_to_uri(href) if href.class == ''.class
 
       begin
@@ -35,7 +36,8 @@ module SpiderHelper
       false
     end
 
-    def direct_http_post(href, local_path, params, header: nil, convert_to_utf8: false)
+    def direct_http_post(href, local_path, params,
+                         header: nil, convert_to_utf8: false)
       href = string_to_uri(href) if href.class == ''.class
 
       begin

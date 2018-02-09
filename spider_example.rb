@@ -1,5 +1,5 @@
-require 'list_spider'
-# require File.expand_path('../lib/list_spider', __FILE__)
+# require 'list_spider'
+require File.expand_path('../lib/list_spider', __FILE__)
 
 DOWNLOAD_DIR = 'coolshell/'.freeze
 

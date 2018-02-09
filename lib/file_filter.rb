@@ -2,7 +2,8 @@
 class FileFilter
   # 4033
   # 920
-  def initialize(dir_pattern, size_threshold: 1000, cust_judge: nil, process_block: nil)
+  def initialize(dir_pattern, size_threshold: 1000,
+                 cust_judge: nil, process_block: nil)
     @dir_pattern = dir_pattern
     @size_threshold = size_threshold
     @cust_judge = cust_judge ? cust_judge : method(:default_judge)
@@ -53,7 +54,8 @@ class FileFilter
     ).start
   end
 
-  def self.check_save_result(dir_pattern, save_file_name: 'filtered_file.txt', size_threshold: 1000, cust_judge: nil)
+  def self.check_save_result(dir_pattern, save_file_name: 'filtered_file.txt',
+                             size_threshold: 1000, cust_judge: nil)
     result_file = File.open(save_file_name, 'wt')
     FileFilter.new(
       dir_pattern,

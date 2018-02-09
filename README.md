@@ -86,9 +86,9 @@ def parse_response(file_name)
 end
 
 
-# extra_data is passed by TaskStruct's extra_data param
+# custom_data is passed by TaskStruct's custom_data param
 
-def parse_response(file_name, extra_data)
+def parse_response(file_name, custom_data)
   #...
 end
 
@@ -99,7 +99,7 @@ end
 # response_header.cookie
 # response_header['Last-Modified']
 
-def parse_response(file_name, extra_data, response_header)
+def parse_response(file_name, custom_data, response_header)
   response_header.status
   response_header['Last-Modified']
 
@@ -113,7 +113,7 @@ end
 # req.uri
 # req.host
 # req.port
-def parse_response(file_name, extra_data, response_header, req)
+def parse_response(file_name, custom_data, response_header, req)
   puts req.body
   puts req.headers
   puts req.uri
@@ -128,7 +128,7 @@ end
 ## And there are many options you can use
 
 ```ruby
-TaskStruct.new(href, local_path, http_method: :get, params: {}, extra_data: nil, parse_method: nil, header: nil)
+TaskStruct.new(href, local_path, http_method: :get, params: {}, custom_data: nil, parse_method: nil, header: nil)
 ```
 
 ```ruby

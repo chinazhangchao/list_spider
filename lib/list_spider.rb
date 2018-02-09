@@ -8,22 +8,72 @@ require File.expand_path('../spider_helper', __FILE__)
 require File.expand_path('../file_filter', __FILE__)
 
 class TaskStruct
-  def initialize(href, local_path, http_method: :get, params: {}, extra_data: nil, parse_method: nil, header: nil)
+  def initialize(href,
+                 local_path,
+                 http_method: :get,
+                 custom_data: nil,
+                 parse_method: nil,
+                 callback: nil,
+                 errback: nil,
+                 stream_callback: nil, # 流数据处理回调
+                 convert_to_utf8: false,
+                 overwrite_exist: false,
+                 # request options
+                 redirects: 3, # 重定向次数
+                 keepalive: nil,
+                 file: nil, # 要上传的文件路径
+                 path: nil, # 请求路径，在流水线方式请求时有用
+                 query: nil, # 查询字符串，可以是string或hash类型
+                 body: nil, # 请求体，可以是string或hash类型
+                 head: nil, # 请求头
+                 # connection options
+                 connect_timeout: 60,
+                 inactivity_timeout: nil,
+                 ssl: nil,
+                 bind: nil,
+                 proxy: nil)
     @href = href
-    @href = SpiderHelper.string_to_uri(@href) if @href.class == ''.class
     @local_path = local_path
     @http_method = http_method
-    @params = params
-    @extra_data = extra_data
+    @custom_data = custom_data
     @parse_method = parse_method
-    @header = header
+    @callback = callback
+    @errback = errback
+    @stream_callback = stream_callback
+    @convert_to_utf8 = convert_to_utf8
+    @overwrite_exist = overwrite_exist
+
+    @request_options = {
+      redirects: redirects,
+      keepalive: keepalive,
+      file: file,
+      path: path,
+      query: query,
+      body: body,
+      head: head
+    }.compact
+
+    @connection_options = {
+      connect_timeout: connect_timeout,
+      inactivity_timeout: inactivity_timeout,
+      ssl: ssl,
+      bind: bind,
+      proxy: proxy
+    }.compact
   end
 
-  def ==(other)
-    other.class == self.class && other.href == href && other.local_path == local_path && other.http_method == http_method && other.params == params && other.extra_data == extra_data && other.header == header
-  end
-
-  attr_accessor :href, :local_path, :http_method, :params, :extra_data, :parse_method, :request_object, :header
+  attr_accessor :href, :local_path,
+                :http_method,
+                :custom_data,
+                :request_object,
+                :parse_method,
+                :callback,
+                :errback,
+                :stream_callback,
+                :convert_to_utf8,
+                :overwrite_exist,
+                :request_options,
+                :connection_options
 end
 
 module ListSpider
@@ -33,33 +83,9 @@ module ListSpider
   DEFAULT_INTERVAL = 0
 
   @random_time_range = 3..10
-  @convert_to_utf8 = false
-  @connection_opts = { connect_timeout: 60 }
-  @overwrite_exist = false
-  @max_redirects = 10
   @local_path_set = Set.new
 
   class << self
-    attr_accessor :convert_to_utf8, :overwrite_exist, :max_redirects
-
-    def set_proxy(proxy_addr, proxy_port, username: nil, password: nil)
-      @connection_opts = {
-        proxy: {
-          host: proxy_addr,
-          port: proxy_port
-        }
-      }
-      @connection_opts[:proxy][:authorization] = [username, password] if username && password
-    end
-
-    def connect_timeout(max_connect_time)
-      @connection_opts[:connect_timeout] = max_connect_time
-    end
-
-    def set_header_option(header_option)
-      @header_option = header_option
-    end
-
     def event_machine_down(link_struct_list, callback = nil)
       failed_list = []
       succeed_list = []
@@ -68,36 +94,15 @@ module ListSpider
 
       for_each_proc =
         proc do |e|
-          opt = { redirects: @max_redirects }
-          if e.header
-            opt[:head] = e.header
-          elsif defined? @header_option
-            opt[:head] = @header_option
-          end
-
-          if e.http_method == :post
-            opt[:body] = e.params unless e.params.empty?
-            w =
-              if @connection_opts
-                EventMachine::HttpRequest.new(e.href, @connection_opts).post opt
-              else
-                EventMachine::HttpRequest.new(e.href).post opt
-              end
-          else
-            if @connection_opts
-              opt[:query] = e.params unless e.params.empty?
-              w = EventMachine::HttpRequest.new(e.href, @connection_opts).get opt
-            else
-              w = EventMachine::HttpRequest.new(e.href).get opt
-            end
-          end
-
+          w = EventMachine::HttpRequest.new(e.href, e.connection_options).public_send(e.http_method, e.request_options)
+          w.stream { |chunk| stream_callback.call(chunk) } if e.stream_callback
           e.request_object = w
 
           w.callback do
             s = w.response_header.status
             puts s
-            if s != 404
+
+            if s == 200
               local_dir = File.dirname(e.local_path)
               FileUtils.mkdir_p(local_dir) unless Dir.exist?(local_dir)
               begin
@@ -108,28 +113,36 @@ module ListSpider
                          w.response
                        end
                 end
+                call_parse_method(e)
                 succeed_list << e
               rescue StandardError => e
                 puts e
               end
+            elsif e.callback
+              e.callback.call(e, w)
             end
           end
+
           w.errback do
             puts "errback:#{w.response_header},retry..."
             puts e.href
             puts w.response_header.status
 
-            ret = false
-            if e.http_method == :get
-              ret = SpiderHelper.direct_http_get(e.href, e.local_path, convert_to_utf8: @convert_to_utf8)
-            elsif e.http_method == :post
-              ret = SpiderHelper.direct_http_post(e.href, e.local_path, e.params, convert_to_utf8: @convert_to_utf8)
-            end
-
-            if ret
-              succeed_list << e
+            if e.errback
+              e.errback.call(e, w)
             else
-              failed_list << e
+              ret = false
+              if e.http_method == :get
+                ret = SpiderHelper.direct_http_get(e.href, e.local_path, convert_to_utf8: @convert_to_utf8)
+              elsif e.http_method == :post
+                ret = SpiderHelper.direct_http_post(e.href, e.local_path, e.params, convert_to_utf8: @convert_to_utf8)
+              end
+
+              if ret
+                succeed_list << e
+              else
+                failed_list << e
+              end
             end
           end
 
@@ -177,11 +190,11 @@ module ListSpider
         when 1
           pm.call(e.local_path)
         when 2
-          pm.call(e.local_path, e.extra_data)
+          pm.call(e.local_path, e.custom_data)
         when 3
           res_header = nil
           res_header = e.request_object.response_header if e.request_object
-          pm.call(e.local_path, e.extra_data, res_header)
+          pm.call(e.local_path, e.custom_data, res_header)
         when 4
           res_header = nil
           res_header = e.request_object.response_header if e.request_object
@@ -189,7 +202,7 @@ module ListSpider
           req = nil
           req = e.request_object.req if e.request_object
 
-          pm.call(e.local_path, e.extra_data, res_header, req)
+          pm.call(e.local_path, e.custom_data, res_header, req)
         else
           puts "Error! The number of arguments is:#{pm.arity}. While expected number is 1, 2, 3, 4"
         end
@@ -199,9 +212,11 @@ module ListSpider
     def complete(_multi, success_list, failed_list)
       @succeed_size += success_list.size
       @failed_size += failed_list.size
-      success_list.each do |e|
-        call_parse_method(e)
-      end
+      @succeed_list.concat(success_list)
+      @failed_list.concat(failed_list)
+      # success_list.each do |e|
+      #   call_parse_method(e)
+      # end
 
       todo = next_task
 
@@ -223,6 +238,8 @@ module ListSpider
 
     def event_machine_start_list(down_list, callback = nil)
       EventMachine.run do
+        @succeed_list = []
+        @failed_list = []
         @begin_time = Time.now
         if down_list.empty?
           if callback
