@@ -8,29 +8,55 @@ require File.expand_path('../spider_helper', __FILE__)
 require File.expand_path('../file_filter', __FILE__)
 
 class TaskStruct
-  def initialize(href,
-                 local_path,
+  def initialize(href, # 请求链接
+                 local_path, # 保存数据的本地路径（此路径作为去重标准）
+                 # http方法，取值：:get, :head, :delete, :put, :post, :patch, :options
                  http_method: :get,
-                 custom_data: nil,
-                 parse_method: nil,
+                 custom_data: nil, # 自定义数据
+                 parse_method: nil, # 解析保存文件的回调，参数是TaskStruct对象本身
+                 # 请求成功后的回调，此时可能没有保存文件，比如301，
+                 # 参数是TaskStruct对象本身和对应的EventMachine::HttpRequest对象
+                 # http.response_header.status 状态码
+                 # http.response_header  返回头
+                 # http.response 返回体
                  callback: nil,
+                 # 请求失败后的回调
+                 # 参数是TaskStruct对象本身和对应的EventMachine::HttpRequest对象
                  errback: nil,
                  stream_callback: nil, # 流数据处理回调
-                 convert_to_utf8: false,
-                 overwrite_exist: false,
+                 convert_to_utf8: false, # 是否转换为utf8编码
+                 overwrite_exist: false, # 是否覆盖现有文件
                  # request options
                  redirects: 3, # 重定向次数
-                 keepalive: nil,
+                 #  keepalive: nil, # （暂不支持）
                  file: nil, # 要上传的文件路径
-                 path: nil, # 请求路径，在流水线方式请求时有用
+                 #  path: nil, # 请求路径，在流水线方式请求时有用（暂不支持）
                  query: nil, # 查询字符串，可以是string或hash类型
                  body: nil, # 请求体，可以是string或hash类型
                  head: nil, # 请求头
                  # connection options
-                 connect_timeout: 60,
-                 inactivity_timeout: nil,
+                 connect_timeout: 60, # 连接超时时间
+                 inactivity_timeout: nil, # 连接后超时时间
+                 # ssl设置
+                 # ssl: {
+                 #     :private_key_file => '/tmp/server.key',
+                 #     :cert_chain_file => '/tmp/server.crt',
+                 #     :verify_peer => false
+                 # }
                  ssl: nil,
+                 # bind: {
+                 #     :host => '123.123.123.123',   # use a specific interface for outbound request
+                 #     :port => '123'
+                 # }
                  bind: nil,
+                 # 代理设置
+                 # proxy: {
+                 #     :host => '127.0.0.1',    # proxy address
+                 #     :port => 9000,           # proxy port
+                 #     :type => :socks5         # default proxy mode is HTTP proxy, change to :socks5 if required
+
+                 #     :authorization => ['user', 'pass']  # proxy authorization header
+                 # }
                  proxy: nil)
     @href = href
     @local_path = local_path
@@ -45,9 +71,9 @@ class TaskStruct
 
     @request_options = {
       redirects: redirects,
-      keepalive: keepalive,
+      # keepalive: keepalive,
       file: file,
-      path: path,
+      # path: path,
       query: query,
       body: body,
       head: head
@@ -93,65 +119,65 @@ module ListSpider
       begin_time = Time.now
 
       for_each_proc =
-        proc do |e|
-          w = EventMachine::HttpRequest.new(e.href, e.connection_options).public_send(e.http_method, e.request_options)
-          w.stream { |chunk| stream_callback.call(chunk) } if e.stream_callback
-          e.request_object = w
+        proc do |task_struct|
+          http_req = EventMachine::HttpRequest.new(task_struct.href, task_struct.connection_options).public_send(task_struct.http_method, task_struct.request_options)
+          http_req.stream { |chunk| stream_callback.call(chunk) } if task_struct.stream_callback
+          task_struct.request_object = http_req
 
-          w.callback do
-            s = w.response_header.status
+          http_req.callback do
+            s = http_req.response_header.status
             puts s
 
             if s == 200
-              local_dir = File.dirname(e.local_path)
+              local_dir = File.dirname(task_struct.local_path)
               FileUtils.mkdir_p(local_dir) unless Dir.exist?(local_dir)
               begin
-                File.open(e.local_path, 'wb') do |f|
+                File.open(task_struct.local_path, 'wb') do |f|
                   f << if @convert_to_utf8 == true
-                         SpiderHelper.to_utf8(w.response)
+                         SpiderHelper.to_utf8(http_req.response)
                        else
-                         w.response
+                         http_req.response
                        end
                 end
-                call_parse_method(e)
-                succeed_list << e
-              rescue StandardError => e
-                puts e
+                call_parse_method(task_struct)
+                succeed_list << task_struct
+              rescue StandardError => exception
+                puts exception
               end
-            elsif e.callback
-              e.callback.call(e, w)
             end
+            task_struct.callback.call(task_struct, http_req) if task_struct.callback
           end
 
-          w.errback do
-            puts "errback:#{w.response_header},retry..."
-            puts e.href
-            puts w.response_header.status
+          http_req.errback do
+            puts "errback:#{http_req.response_header},retry..."
+            puts task_struct.href
+            puts http_req.response_header.status
 
-            if e.errback
-              e.errback.call(e, w)
+            if task_struct.errback
+              task_struct.errback.call(task_struct, http_req)
             else
               ret = false
-              if e.http_method == :get
-                ret = SpiderHelper.direct_http_get(e.href, e.local_path, convert_to_utf8: @convert_to_utf8)
-              elsif e.http_method == :post
-                ret = SpiderHelper.direct_http_post(e.href, e.local_path, e.params, convert_to_utf8: @convert_to_utf8)
+              if task_struct.http_method == :get
+                ret = SpiderHelper.direct_http_get(task_struct.href, task_struct.local_path, convert_to_utf8: @convert_to_utf8)
+              elsif task_struct.http_method == :post
+                ret = SpiderHelper.direct_http_post(task_struct.href, task_struct.local_path, task_struct.params, convert_to_utf8: @convert_to_utf8)
               end
 
               if ret
-                succeed_list << e
+                call_parse_method(task_struct)
+                succeed_list << task_struct
               else
-                failed_list << e
+                failed_list << task_struct
               end
             end
           end
 
           begin
-            multi.add e.local_path, w
+            multi.add task_struct.local_path, http_req
           rescue StandardError => exception
             puts exception
-            puts e.href
-            puts e.local_path
+            puts task_struct.href
+            puts task_struct.local_path
             stop_machine
           end
         end
@@ -183,30 +209,8 @@ module ListSpider
       @down_list.shift(@max)
     end
 
-    def call_parse_method(e)
-      pm = e.parse_method
-      if pm
-        case pm.arity
-        when 1
-          pm.call(e.local_path)
-        when 2
-          pm.call(e.local_path, e.custom_data)
-        when 3
-          res_header = nil
-          res_header = e.request_object.response_header if e.request_object
-          pm.call(e.local_path, e.custom_data, res_header)
-        when 4
-          res_header = nil
-          res_header = e.request_object.response_header if e.request_object
-
-          req = nil
-          req = e.request_object.req if e.request_object
-
-          pm.call(e.local_path, e.custom_data, res_header, req)
-        else
-          puts "Error! The number of arguments is:#{pm.arity}. While expected number is 1, 2, 3, 4"
-        end
-      end
+    def call_parse_method(task_struct)
+      task_struct.parse_method.call(task_struct) if task_struct.parse_method
     end
 
     def complete(_multi, success_list, failed_list)
@@ -214,9 +218,6 @@ module ListSpider
       @failed_size += failed_list.size
       @succeed_list.concat(success_list)
       @failed_list.concat(failed_list)
-      # success_list.each do |e|
-      #   call_parse_method(e)
-      # end
 
       todo = next_task
 
@@ -256,7 +257,7 @@ module ListSpider
     def filter_list(down_list)
       need_down_list = []
       down_list.each do |ts|
-        if !@overwrite_exist && File.exist?(ts.local_path)
+        if !ts.overwrite_exist && File.exist?(ts.local_path)
           call_parse_method(ts)
         elsif @local_path_set.add?(ts.local_path)
           need_down_list << ts
