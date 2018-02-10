@@ -5,7 +5,7 @@ module SpiderHelper
   class << self
     def direct_http_get(href, local_path, params: nil,
                         header: nil, convert_to_utf8: false)
-      href = string_to_uri(href) if href.class == ''.class
+      href = string_to_uri(href.to_s) unless href.is_a?(Addressable::URI)
 
       begin
         href.query = URI.encode_www_form(params) if params
@@ -38,7 +38,7 @@ module SpiderHelper
 
     def direct_http_post(href, local_path, params,
                          header: nil, convert_to_utf8: false)
-      href = string_to_uri(href) if href.class == ''.class
+      href = string_to_uri(href.to_s) unless href.is_a?(Addressable::URI)
 
       begin
         req = Net::HTTP::Post.new(href)
@@ -74,7 +74,7 @@ module SpiderHelper
 
     def string_to_uri(href)
       l = href
-      l.sub!('http:///', 'http://') if l.start_with?('http:///')
+      l.sub!('http:///', 'http://')
       l = Addressable::URI.parse(l)
       l.normalize!
     end
