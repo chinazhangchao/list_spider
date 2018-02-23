@@ -14,7 +14,7 @@ class TaskStruct
                  http_method: :get,
                  custom_data: nil, # 自定义数据
                  parse_method: nil, # 解析保存文件的回调，参数是TaskStruct对象本身
-                 # 请求成功后的回调，此时可能没有保存文件，比如301，
+                 # 请求成功后的回调，此时可能没有保存文件，比如301，404
                  # 参数是TaskStruct对象本身和对应的EventMachine::HttpRequest对象
                  # http.response_header.status 状态码
                  # http.response_header  返回头
@@ -155,20 +155,20 @@ module ListSpider
 
             if task_struct.errback
               task_struct.errback.call(task_struct, http_req)
-            else
-              ret = false
-              if task_struct.http_method == :get
-                ret = SpiderHelper.direct_http_get(task_struct.href, task_struct.local_path, convert_to_utf8: @convert_to_utf8)
-              elsif task_struct.http_method == :post
-                ret = SpiderHelper.direct_http_post(task_struct.href, task_struct.local_path, task_struct.params, convert_to_utf8: @convert_to_utf8)
-              end
+            # else
+            #   ret = false
+            #   if task_struct.http_method == :get
+            #     ret = SpiderHelper.direct_http_get(task_struct.href, task_struct.local_path, convert_to_utf8: @convert_to_utf8)
+            #   elsif task_struct.http_method == :post
+            #     ret = SpiderHelper.direct_http_post(task_struct.href, task_struct.local_path, task_struct.params, convert_to_utf8: @convert_to_utf8)
+            #   end
 
-              if ret
-                call_parse_method(task_struct)
-                succeed_list << task_struct
-              else
-                failed_list << task_struct
-              end
+            #   if ret
+            #     call_parse_method(task_struct)
+            #     succeed_list << task_struct
+            #   else
+            #     failed_list << task_struct
+            #   end
             end
           end
 
