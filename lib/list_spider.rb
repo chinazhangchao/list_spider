@@ -28,9 +28,9 @@ class TaskStruct
                  overwrite_exist: false, # 是否覆盖现有文件
                  # request options
                  redirects: 3, # 重定向次数
-                 #  keepalive: nil, # （暂不支持）
+                 keepalive: nil, # （暂不支持复用）
                  file: nil, # 要上传的文件路径
-                 #  path: nil, # 请求路径，在流水线方式请求时有用（暂不支持）
+                 path: nil, # 请求路径，在流水线方式请求时有用（暂不支持）
                  query: nil, # 查询字符串，可以是string或hash类型
                  body: nil, # 请求体，可以是string或hash类型
                  head: nil, # 请求头
@@ -71,9 +71,9 @@ class TaskStruct
 
     @request_options = {
       redirects: redirects,
-      # keepalive: keepalive,
+      keepalive: keepalive,
       file: file,
-      # path: path,
+      path: path,
       query: query,
       body: body,
       head: head
