@@ -126,7 +126,7 @@ module ListSpider
 
           http_req.callback do
             s = http_req.response_header.status
-            puts s
+            puts "#{Time.now}, http status code: #{s}"
 
             if s == 200
               local_dir = File.dirname(task_struct.local_path)
@@ -149,27 +149,9 @@ module ListSpider
           end
 
           http_req.errback do
-            puts "errback:#{http_req.response_header},retry..."
-            puts task_struct.href
-            puts http_req.response_header.status
+            puts "#{Time.now}, #{task_struct.href}, error: #{http_req.error}"
 
-            if task_struct.errback
-              task_struct.errback.call(task_struct, http_req)
-            # else
-            #   ret = false
-            #   if task_struct.http_method == :get
-            #     ret = SpiderHelper.direct_http_get(task_struct.href, task_struct.local_path, convert_to_utf8: @convert_to_utf8)
-            #   elsif task_struct.http_method == :post
-            #     ret = SpiderHelper.direct_http_post(task_struct.href, task_struct.local_path, task_struct.params, convert_to_utf8: @convert_to_utf8)
-            #   end
-
-            #   if ret
-            #     call_parse_method(task_struct)
-            #     succeed_list << task_struct
-            #   else
-            #     failed_list << task_struct
-            #   end
-            end
+            task_struct.errback.call(task_struct, http_req) if task_struct.errback
           end
 
           begin
