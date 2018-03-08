@@ -1,6 +1,6 @@
 # 关于list_spider
 
-list_spider是一个基于em-http-request的爬虫工具。
+list_spider是一个基于[em-http-request](https://github.com/igrigorik/em-http-request)的爬虫工具。
 
 许多情况下，爬虫的工作是爬取链接，解析返回数据，从中提取链接，继续爬取，list_spider就是适用这种场景的爬虫工具。
 
@@ -90,7 +90,7 @@ ListSpider.get_one(
 )
 ```
 
-## 下面是TaskStruct可以设置的选项
+## 下面是TaskStruct可以设置的选项，与[em-http-request](https://github.com/igrigorik/em-http-request)基本一致
 
 ```ruby
 def initialize(href, # 请求链接
