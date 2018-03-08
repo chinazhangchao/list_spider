@@ -4,8 +4,8 @@ require 'nokogiri'
 require 'fileutils'
 require 'set'
 require 'addressable/uri'
-require File.expand_path('../spider_helper', __FILE__)
-require File.expand_path('../file_filter', __FILE__)
+require File.expand_path('spider_helper', __dir__)
+require File.expand_path('file_filter', __dir__)
 
 class TaskStruct
   def initialize(href, # 请求链接
@@ -16,9 +16,9 @@ class TaskStruct
                  parse_method: nil, # 解析保存文件的回调，参数是TaskStruct对象本身
                  # 请求成功后的回调，此时可能没有保存文件，比如301，404
                  # 参数是TaskStruct对象本身和对应的EventMachine::HttpRequest对象
-                 # http.response_header.status 状态码
-                 # http.response_header  返回头
-                 # http.response 返回体
+                 # http_req.response_header.status 状态码
+                 # http_req.response_header  返回头
+                 # http_req.response 返回体
                  callback: nil,
                  # 请求失败后的回调
                  # 参数是TaskStruct对象本身和对应的EventMachine::HttpRequest对象
@@ -26,7 +26,7 @@ class TaskStruct
                  stream_callback: nil, # 流数据处理回调
                  convert_to_utf8: false, # 是否转换为utf8编码
                  overwrite_exist: false, # 是否覆盖现有文件
-                 # request options
+                 # 请求设置
                  redirects: 3, # 重定向次数
                  keepalive: nil, # （暂不支持复用）
                  file: nil, # 要上传的文件路径
@@ -34,7 +34,7 @@ class TaskStruct
                  query: nil, # 查询字符串，可以是string或hash类型
                  body: nil, # 请求体，可以是string或hash类型
                  head: nil, # 请求头
-                 # connection options
+                 # 连接设置
                  connect_timeout: 60, # 连接超时时间
                  inactivity_timeout: nil, # 连接后超时时间
                  # ssl设置

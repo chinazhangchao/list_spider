@@ -4,8 +4,8 @@ DOWNLOAD_DIR = 'coolshell/'.freeze
 
 @next_list = []
 
-def parse_index_item(file_name)
-  content = File.read(file_name)
+def parse_index_item(e)
+  content = File.read(e.local_path)
   doc = Nokogiri::HTML(content)
   list_group = doc.css('h2.entry-title')
   link_list = list_group.css('a')

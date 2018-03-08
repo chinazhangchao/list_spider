@@ -1,33 +1,33 @@
-# 关于list_spider
+# list_spider
 
-list_spider是一个基于em-http-request的爬虫工具。
+A url list spider based on em-http-request.
 
-许多情况下，爬虫的工作是爬取链接，解析返回数据，从中提取链接，继续爬取，list_spider就是适用这种场景的爬虫工具。
+Many times we only need to spider by url list then parse them and spider again. This is for the purpose.
 
-## 功能特点
-* 去重过滤 (使用本地文件路径做唯一性校验)。
+## Features
+* Duplicate url filtering (based on local path, so you can custom your behavior).
 
-* 支持UTF-8编码转换。
+* Convert to UTF-8 support.
 
-* 默认增量爬取，已爬取的不再重复爬取（可以通过选项强制重新获取）。
+* Increased spider support (don't spider exist).
 
-* 自由设置最大并发数和爬取任务间隔时间。
+* Customize concurrent number and interval between task.
 
-* 支持http所有选项设置。
+* Http options support.
 
-## 开始
+## Getting started
 
 ```ruby
 gem install list_spider
 ```
 
-或者添加到Gemfile
+Or add it to your Gemfile
 
 ```ruby
 gem 'list_spider'
 ```
 
-## 使用方法
+## Use like this
 ```ruby
 require 'list_spider'
 
@@ -44,7 +44,7 @@ def parse_index_item(e)
   link_list.each do |link|
     href = link['href']
     local_path = DOWNLOAD_DIR + link.content + '.html'
-    # 可以存入数据库后续处理
+    # or you can save them to database for later use
     @next_list << TaskStruct.new(href, local_path)
   end
 end
@@ -60,7 +60,7 @@ ListSpider.get_list(task_list)
 ListSpider.get_list(@next_list, max: 60)
 ```
 
-## 或者使用更简单的一步完成
+## Or in one step
 ```ruby
 require 'list_spider'
 
@@ -79,7 +79,7 @@ def parse_index_item(e)
   end
 end
 
-# get_one是封装了get_list的简化形式，方便一个任务时调用
+# get_one is a simple function for one taskstruct situation
 ListSpider.get_one(
   TaskStruct.new(
     'https://coolshell.cn/',
@@ -90,7 +90,7 @@ ListSpider.get_one(
 )
 ```
 
-## 下面是TaskStruct可以设置的选项
+## And there are many options you can use
 
 ```ruby
 def initialize(href, # 请求链接
@@ -101,9 +101,9 @@ def initialize(href, # 请求链接
                  parse_method: nil, # 解析保存文件的回调，参数是TaskStruct对象本身
                  # 请求成功后的回调，此时可能没有保存文件，比如301，404
                  # 参数是TaskStruct对象本身和对应的EventMachine::HttpRequest对象
-                 # http_req.response_header.status 状态码
-                 # http_req.response_header  返回头
-                 # http_req.response 返回体
+                 # http.response_header.status 状态码
+                 # http.response_header  返回头
+                 # http.response 返回体
                  callback: nil,
                  # 请求失败后的回调
                  # 参数是TaskStruct对象本身和对应的EventMachine::HttpRequest对象
@@ -111,7 +111,7 @@ def initialize(href, # 请求链接
                  stream_callback: nil, # 流数据处理回调
                  convert_to_utf8: false, # 是否转换为utf8编码
                  overwrite_exist: false, # 是否覆盖现有文件
-                 # 请求设置
+                 # request options
                  redirects: 3, # 重定向次数
                  keepalive: nil, # （暂不支持复用）
                  file: nil, # 要上传的文件路径
@@ -119,7 +119,7 @@ def initialize(href, # 请求链接
                  query: nil, # 查询字符串，可以是string或hash类型
                  body: nil, # 请求体，可以是string或hash类型
                  head: nil, # 请求头
-                 # 连接设置
+                 # connection options
                  connect_timeout: 60, # 连接超时时间
                  inactivity_timeout: nil, # 连接后超时时间
                  # ssl设置
@@ -145,22 +145,20 @@ def initialize(href, # 请求链接
                  proxy: nil)
 ```
 
-## 回调函数形式
+## Callback methods form
 
 ```ruby
-# 文件成功保存后调用，通过parse_method参数传入
+# called when the file is saved successfully
 def parse_eresponse(task_struct)
   # ...
 end
 
-# http请求成功后调用，通过callback参数传入
 def call_back(task_struct, http_req)
-  # http_req 是EventMachine::HttpRequest对象
+  # http_req is a EventMachine::HttpRequest object
   # http_req.response_header.status
   # ...
 end
 
-# http请求出错后调用，通过errback参数传入
 def err_back(task_struct, http_req)
   # ...
 end
