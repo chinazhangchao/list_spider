@@ -90,10 +90,19 @@ ListSpider.get_one(
 )
 ```
 
+## get_list/get_one参数
+```
+# down_list: 要请求的TaskStruct数组
+# interval: 任务间隔，默认为0。若参数为Range对象，则随机间隔Range范围内的秒数。若设为RANDOM_TIME则随机间隔3到10秒。
+# max: 最大并发数，默认为50。若设为NO_LIMIT_CONCURRENT，则所有请求任务全部一起并发执行
+get_list(down_list, interval: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
+get_one(task, interval: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
+```
+
 ## 下面是TaskStruct可以设置的选项，与[em-http-request](https://github.com/igrigorik/em-http-request)基本一致
 
 ```ruby
-def initialize(href, # 请求链接
+new(href, # 请求链接
                  local_path, # 保存数据的本地路径（此路径作为去重标准）
                  # http方法，取值：:get, :head, :delete, :put, :post, :patch, :options
                  http_method: :get,
@@ -166,6 +175,6 @@ def err_back(task_struct, http_req)
 end
 ```
 
-### License
+## License
 
 (MIT License) - Copyright (c) 2016 Charles Zhang

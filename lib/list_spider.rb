@@ -7,7 +7,13 @@ require 'addressable/uri'
 require File.expand_path('spider_helper', __dir__)
 require File.expand_path('file_filter', __dir__)
 
+# 爬取任务类
 class TaskStruct
+  # * href 请求链接
+  # * local_path 保存数据的本地路径（此路径作为去重标准）
+  # * http_method http方法，取值：:get, :head, :delete, :put, :post, :patch, :options
+  # * custom_data 自定义数据
+  # * parse_method 解析保存文件的回调，参数是TaskStruct对象本身
   def initialize(href, # 请求链接
                  local_path, # 保存数据的本地路径（此路径作为去重标准）
                  # http方法，取值：:get, :head, :delete, :put, :post, :patch, :options
@@ -112,6 +118,41 @@ module ListSpider
   @local_path_set = Set.new
 
   class << self
+    def get_list(down_list, interval: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
+      if interval.is_a? Range
+        @random_time_range = interval
+        interval = RANDOM_TIME
+      end
+
+      @down_list = filter_list(down_list)
+      @interval = interval
+      @max = max
+      @max = @down_list.size if @max == NO_LIMIT_CONCURRENT
+      @succeed_size = 0
+      @failed_size = 0
+
+      puts "total size:#{@down_list.size}"
+      event_machine_start_list(next_task, method(:complete))
+    end
+
+    def get_one(task, interval: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
+      get_list([task], interval: interval, max: max)
+    end
+
+    def add_task(task)
+      if task.is_a? Array
+        need_down_list = filter_list(task)
+        @down_list += need_down_list
+      elsif task.is_a?TaskStruct
+        need_down_list = filter_list([task])
+        @down_list += need_down_list
+      else
+        puts "error task type:#{task.class}"
+      end
+    end
+
+    private
+
     def event_machine_down(link_struct_list, callback = nil)
       failed_list = []
       succeed_list = []
@@ -246,43 +287,6 @@ module ListSpider
         end
       end
       need_down_list
-    end
-
-    def get_list(down_list, interval: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
-      if interval.is_a? Range
-        @random_time_range = interval
-        interval = RANDOM_TIME
-      end
-
-      @down_list = []
-
-      need_down_list = filter_list(down_list)
-
-      @down_list += need_down_list
-      @interval = interval
-      @max = max
-      @max = @down_list.size if @max == NO_LIMIT_CONCURRENT
-      @succeed_size = 0
-      @failed_size = 0
-
-      puts "total size:#{@down_list.size}"
-      event_machine_start_list(next_task, method(:complete))
-    end
-
-    def get_one(task, interval: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
-      get_list([task], interval: interval, max: max)
-    end
-
-    def add_task(task)
-      if task.is_a? Array
-        need_down_list = filter_list(task)
-        @down_list += need_down_list
-      elsif task.is_a?TaskStruct
-        need_down_list = filter_list([task])
-        @down_list += need_down_list
-      else
-        puts "error task type:#{task.class}"
-      end
     end
   end
 
