@@ -95,6 +95,7 @@ ListSpider.get_one(
 # down_list: 要请求的TaskStruct数组
 # interval: 任务间隔，默认为0。若参数为Range对象，则随机间隔Range范围内的秒数。若设为RANDOM_TIME则随机间隔3到10秒。
 # max: 最大并发数，默认为50。若设为NO_LIMIT_CONCURRENT，则所有请求任务全部一起并发执行
+
 get_list(down_list, interval: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
 get_one(task, interval: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
 ```
@@ -103,55 +104,55 @@ get_one(task, interval: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
 
 ```ruby
 new(href, # 请求链接
-                 local_path, # 保存数据的本地路径（此路径作为去重标准）
-                 # http方法，取值：:get, :head, :delete, :put, :post, :patch, :options
-                 http_method: :get,
-                 custom_data: nil, # 自定义数据
-                 parse_method: nil, # 解析保存文件的回调，参数是TaskStruct对象本身
-                 # 请求成功后的回调，此时可能没有保存文件，比如301，404
-                 # 参数是TaskStruct对象本身和对应的EventMachine::HttpRequest对象
-                 # http_req.response_header.status 状态码
-                 # http_req.response_header  返回头
-                 # http_req.response 返回体
-                 callback: nil,
-                 # 请求失败后的回调
-                 # 参数是TaskStruct对象本身和对应的EventMachine::HttpRequest对象
-                 errback: nil,
-                 stream_callback: nil, # 流数据处理回调
-                 convert_to_utf8: false, # 是否转换为utf8编码
-                 overwrite_exist: false, # 是否覆盖现有文件
-                 # 请求设置
-                 redirects: 3, # 重定向次数
-                 keepalive: nil, # （暂不支持复用）
-                 file: nil, # 要上传的文件路径
-                 path: nil, # 请求路径，在流水线方式请求时有用（暂不支持）
-                 query: nil, # 查询字符串，可以是string或hash类型
-                 body: nil, # 请求体，可以是string或hash类型
-                 head: nil, # 请求头
-                 # 连接设置
-                 connect_timeout: 60, # 连接超时时间
-                 inactivity_timeout: nil, # 连接后超时时间
-                 # ssl设置
-                 # ssl: {
-                 #     :private_key_file => '/tmp/server.key',
-                 #     :cert_chain_file => '/tmp/server.crt',
-                 #     :verify_peer => false
-                 # }
-                 ssl: nil,
-                 # bind: {
-                 #     :host => '123.123.123.123',   # use a specific interface for outbound request
-                 #     :port => '123'
-                 # }
-                 bind: nil,
-                 # 代理设置
-                 # proxy: {
-                 #     :host => '127.0.0.1',    # proxy address
-                 #     :port => 9000,           # proxy port
-                 #     :type => :socks5         # default proxy mode is HTTP proxy, change to :socks5 if required
+    local_path, # 保存数据的本地路径（此路径作为去重标准）
+    # http方法，取值：:get, :head, :delete, :put, :post, :patch, :options
+    http_method: :get,
+    custom_data: nil, # 自定义数据
+    parse_method: nil, # 解析保存文件的回调，参数是TaskStruct对象本身
+    # 请求成功后的回调，此时可能没有保存文件，比如301，404
+    # 参数是TaskStruct对象本身和对应的EventMachine::HttpRequest对象
+    # http_req.response_header.status 状态码
+    # http_req.response_header  返回头
+    # http_req.response 返回体
+    callback: nil,
+    # 请求失败后的回调
+    # 参数是TaskStruct对象本身和对应的EventMachine::HttpRequest对象
+    errback: nil,
+    stream_callback: nil, # 流数据处理回调
+    convert_to_utf8: false, # 是否转换为utf8编码
+    overwrite_exist: false, # 是否覆盖现有文件
+    # 请求设置
+    redirects: 3, # 重定向次数
+    keepalive: nil, # （暂不支持复用）
+    file: nil, # 要上传的文件路径
+    path: nil, # 请求路径，在流水线方式请求时有用（暂不支持）
+    query: nil, # 查询字符串，可以是string或hash类型
+    body: nil, # 请求体，可以是string或hash类型
+    head: nil, # 请求头
+    # 连接设置
+    connect_timeout: 60, # 连接超时时间
+    inactivity_timeout: nil, # 连接后超时时间
+    # ssl设置
+    # ssl: {
+    #     :private_key_file => '/tmp/server.key',
+    #     :cert_chain_file => '/tmp/server.crt',
+    #     :verify_peer => false
+    # }
+    ssl: nil,
+    # bind: {
+    #     :host => '123.123.123.123',   # use a specific interface for outbound request
+    #     :port => '123'
+    # }
+    bind: nil,
+    # 代理设置
+    # proxy: {
+    #     :host => '127.0.0.1',    # proxy address
+    #     :port => 9000,           # proxy port
+    #     :type => :socks5         # default proxy mode is HTTP proxy, change to :socks5 if required
 
-                 #     :authorization => ['user', 'pass']  # proxy authorization header
-                 # }
-                 proxy: nil)
+    #     :authorization => ['user', 'pass']  # proxy authorization header
+    # }
+    proxy: nil)
 ```
 
 ## 回调函数形式
