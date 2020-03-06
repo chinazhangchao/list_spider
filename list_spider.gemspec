@@ -23,9 +23,9 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   spec.add_development_dependency 'bundler', '~> 1.16'
-  spec.add_development_dependency 'rake', '~> 10.0'
+  spec.add_development_dependency 'rake', '>= 12.3.3'
 
   spec.add_dependency 'em-http-request', '~> 1.1', '>= 1.1.3'
-  spec.add_dependency 'nokogiri', '~> 1.10'
+  spec.add_dependency 'nokogiri', '>= 1.10.8'
   spec.add_dependency 'rchardet', '~> 1.6', '>= 1.6.1'
 end
