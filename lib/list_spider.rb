@@ -116,6 +116,7 @@ module ListSpider
 
   @random_time_range = 3..10
   @local_path_set = Set.new
+  @down_list = []
 
   class << self
     def get_list(down_list, interval: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
