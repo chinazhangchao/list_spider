@@ -3,6 +3,7 @@ require 'em-http-request'
 require 'nokogiri'
 require 'fileutils'
 require 'set'
+require 'securerandom'
 require 'addressable/uri'
 require File.expand_path('spider_helper', __dir__)
 require File.expand_path('file_filter', __dir__)
@@ -10,12 +11,12 @@ require File.expand_path('file_filter', __dir__)
 # 爬取任务类
 class TaskStruct
   # * href 请求链接
-  # * local_path 保存数据的本地路径（此路径作为去重标准）
+  # * local_path 保存数据的本地路径（保存文件的情况下此路径作为去重标准）
   # * http_method http方法，取值：:get, :head, :delete, :put, :post, :patch, :options
   # * custom_data 自定义数据
   # * parse_method 解析保存文件的回调，参数是TaskStruct对象本身
   def initialize(href, # 请求链接
-                 local_path, # 保存数据的本地路径（此路径作为去重标准）
+                 local_path = :nil, # 保存数据的本地路径（保存文件的情况下此路径作为去重标准）
                  # http方法，取值：:get, :head, :delete, :put, :post, :patch, :options
                  http_method: :get,
                  custom_data: nil, # 自定义数据
@@ -117,8 +118,11 @@ module ListSpider
   @random_time_range = 3..10
   @local_path_set = Set.new
   @down_list = []
+  @save_file = true
 
   class << self
+    attr_accessor :save_file
+
     def get_list(down_list, interval: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
       if interval.is_a? Range
         @random_time_range = interval
@@ -170,7 +174,7 @@ module ListSpider
             s = http_req.response_header.status
             puts "#{Time.now}, http status code: #{s}"
 
-            if s == 200
+            if s == 200 && @save_file
               local_dir = File.dirname(task_struct.local_path)
               FileUtils.mkdir_p(local_dir) unless Dir.exist?(local_dir)
               begin
@@ -197,7 +201,11 @@ module ListSpider
           end
 
           begin
-            multi.add task_struct.local_path, http_req
+            if @save_file
+              multi.add task_struct.local_path, http_req
+            else
+              multi.add SecureRandom.uuid, http_req
+            end
           rescue StandardError => exception
             puts exception
             puts task_struct.href
@@ -279,6 +287,8 @@ module ListSpider
     end
 
     def filter_list(down_list)
+      return down_list unless @save_file
+      
       need_down_list = []
       down_list.each do |ts|
         if !ts.overwrite_exist && File.exist?(ts.local_path)

@@ -100,11 +100,38 @@ get_list(down_list, interval: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
 get_one(task, interval: DEFAULT_INTERVAL, max: DEFAULT_CONCURRNET_MAX)
 ```
 
+## 可以设置为不保存文件，用`ListSpider.save_file = false`，此时不会根据文件路径做去重处理
+```
+require 'list_spider'
+
+def call_back(task_struct, http_req)
+  puts "succeed"
+  puts http_req.response_header.status
+  File.write("index.html", http_req.response)
+end
+
+def err_back(task_struct, http_req)
+  puts "failed"
+  puts http_req.response_header.status
+end
+
+ListSpider.save_file = false
+
+# get_one is a simple function for one taskstruct situation
+ListSpider.get_one(
+  TaskStruct.new(
+    'https://coolshell.cn/',
+    callback: method(:call_back),
+    errback: method(:err_back)
+  )
+)
+```
+
 ## 下面是TaskStruct可以设置的选项，与[em-http-request](https://github.com/igrigorik/em-http-request)基本一致
 
 ```ruby
 new(href, # 请求链接
-    local_path, # 保存数据的本地路径（此路径作为去重标准）
+    local_path = :nil, # 保存数据的本地路径（保存文件的情况下此路径作为去重标准）
     # http方法，取值：:get, :head, :delete, :put, :post, :patch, :options
     http_method: :get,
     custom_data: nil, # 自定义数据
@@ -167,6 +194,8 @@ end
 def call_back(task_struct, http_req)
   # http_req 是EventMachine::HttpRequest对象
   # http_req.response_header.status
+  # http_req.response_header
+  # http_req.response
   # ...
 end
 
