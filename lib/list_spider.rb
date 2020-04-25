@@ -156,6 +156,10 @@ module ListSpider
       end
     end
 
+    def stop
+      stop_machine
+    end
+
     private
 
     def event_machine_down(link_struct_list, callback = nil)
