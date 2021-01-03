@@ -129,7 +129,7 @@ module ListSpider
         interval = RANDOM_TIME
       end
 
-      @down_list = filter_list(down_list)
+      filter_list(down_list)
       @interval = interval
       @max = max
       @max = @down_list.size if @max == NO_LIMIT_CONCURRENT
@@ -146,11 +146,9 @@ module ListSpider
 
     def add_task(task)
       if task.is_a? Array
-        need_down_list = filter_list(task)
-        @down_list += need_down_list
+        filter_list(task)
       elsif task.is_a?TaskStruct
-        need_down_list = filter_list([task])
-        @down_list += need_down_list
+        filter_list([task])
       else
         puts "error task type:#{task.class}"
       end
@@ -291,17 +289,15 @@ module ListSpider
     end
 
     def filter_list(down_list)
-      return down_list unless @save_file
-      
-      need_down_list = []
+      return unless @save_file
+
       down_list.each do |ts|
         if !ts.overwrite_exist && File.exist?(ts.local_path)
           call_parse_method(ts)
         elsif @local_path_set.add?(ts.local_path)
-          need_down_list << ts
+          @down_list << ts
         end
       end
-      need_down_list
     end
   end
 
