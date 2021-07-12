@@ -9,7 +9,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    addressable (2.7.0)
+    addressable (2.8.0)
       public_suffix (>= 2.0.2, < 5.0)
     cookiejar (0.3.3)
     em-http-request (1.1.5)
@@ -21,9 +21,12 @@ GEM
     em-socksify (0.3.2)
       eventmachine (>= 1.0.0.beta.4)
     eventmachine (1.2.7)
+    eventmachine (1.2.7-x64-mingw32)
     http_parser.rb (0.6.0)
     mini_portile2 (2.4.0)
     nokogiri (1.10.10)
+      mini_portile2 (~> 2.4.0)
+    nokogiri (1.10.10-x64-mingw32)
       mini_portile2 (~> 2.4.0)
     public_suffix (4.0.6)
     rake (13.0.1)
