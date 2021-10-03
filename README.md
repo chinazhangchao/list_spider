@@ -2,7 +2,7 @@
 
 list_spider是一个基于[em-http-request](https://github.com/igrigorik/em-http-request)的爬虫工具。
 
-许多情况下，爬虫的工作是爬取链接，解析返回数据，从中提取链接，继续爬取，list_spider就是适用这种场景的爬虫工具。
+很多时候，爬虫的工作流程是爬取链接，解析返回数据，从中提取链接，继续爬取，list_spider就是适用这种场景的爬虫工具。
 
 ## 功能特点
 * 去重过滤 (使用本地文件路径做唯一性校验)。
